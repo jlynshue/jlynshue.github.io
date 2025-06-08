@@ -9,7 +9,7 @@ const HeroSection = () => {
       <div className="max-w-4xl mx-auto px-6">
         <div className="mb-16">
           <h1 className="text-4xl md:text-6xl font-light text-gray-900 leading-tight mb-8">
-            Hi, I'm <span className="font-medium">Your Name</span>,<br />
+            Hi, I'm <span className="font-medium">Jonathan</span>,<br />
             <span className="text-gray-700">
               Building innovative digital experiences and leading teams to
               create meaningful products that make a difference.
