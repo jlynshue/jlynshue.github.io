@@ -10,11 +10,11 @@ const CollaborationSection = () => {
       company: "Puzzle",
     },
     {
-      name: "Michael R.",
-      role: "Senior Developer",
+      name: "Eddie Lageyre",
+      role: "B2B / B2C Omni-channel Sales, Business Development, Product Management, Merchandising, Purchasing and Distribution Expert",
       content:
-        "One of the most collaborative engineers I've worked with. They're never defensive about feedback and always approach discussions with genuine curiosity and openness.",
-      company: "StartupXYZ",
+        "Jonathan is an outstanding and detailed worker! He is thorough, accurate, and efficient. He is an outstanding addition to any organization and will not fail in any task given.",
+      company: "",
     },
     {
       name: "Lisa K.",
@@ -78,9 +78,11 @@ const CollaborationSection = () => {
                   <div className="text-gray-600 text-sm">
                     {testimonial.role}
                   </div>
-                  <div className="text-gray-500 text-sm">
-                    {testimonial.company}
-                  </div>
+                  {testimonial.company && (
+                    <div className="text-gray-500 text-sm">
+                      {testimonial.company}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
