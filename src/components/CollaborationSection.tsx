@@ -3,11 +3,11 @@ import { Card, CardContent } from "@/components/ui/card";
 const CollaborationSection = () => {
   const testimonials = [
     {
-      name: "Sarah M.",
-      role: "Product Manager",
+      name: "Radha Shenoy",
+      role: "VP of Engineering",
       content:
-        "Working with them is incredibly smooth. They have this amazing ability to translate complex technical concepts into language that everyone can understand. The collaboration feels effortless.",
-      company: "TechCorp",
+        "He played a key role when it came to evaluating various tag management solutions. Jonathan worked very well in an agile environment supporting and mentoring the team as needed while displaying excellent relationship management and communication skills, with the ability to work in cross-functional teams.",
+      company: "Puzzle",
     },
     {
       name: "Michael R.",

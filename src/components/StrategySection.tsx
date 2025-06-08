@@ -2,7 +2,7 @@ const StrategySection = () => {
   const workshops = [
     {
       title: "Technical Architecture Planning",
-      description: "System design and scalability workshops",
+      description: "Martech system design and scalability workshops",
       image: "/placeholder.svg",
     },
     {

@@ -12,8 +12,8 @@ const HeroSection = () => {
             Hi, I'm <span className="font-medium">Jonathan Lyn-Shue</span>,
             <br />
             <span className="text-gray-700">
-              Building innovative data products and leading teams to create
-              meaningful products that make a difference.
+              Accelerating business transformation and leading teams to create
+              innovative data products that make a difference.
             </span>
           </h1>
         </div>

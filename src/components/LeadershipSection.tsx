@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 
 const LeadershipSection = () => {
   const highlights = [
-    "Led cross-functional teams of 15+ developers and designers",
-    "Mentored 50+ junior developers through structured programs",
-    "Established engineering best practices adopted company-wide",
+    "Led cross-functional teams of 15+ data analysts, scientists and engineers",
+    "Mentored 30+ junior professionals through structured programs",
+    "Established data strategy and governance best practices adopted company-wide",
     "Organized weekly tech talks and knowledge sharing sessions",
-    "Implemented code review processes that improved quality by 60%",
+    "Implemented review processes that improved quality by 60%",
     "Created onboarding programs that reduced ramp-up time by 40%",
   ];
 
@@ -90,17 +90,7 @@ const LeadershipSection = () => {
             <div className="border-l-4 border-yellow-400 pl-4">
               <h4 className="font-medium text-gray-900">Corporate Training</h4>
               <p className="text-gray-600">
-                Delivered custom training programs for engineering teams at
-                Fortune 500 companies
-              </p>
-            </div>
-            <div className="border-l-4 border-yellow-400 pl-4">
-              <h4 className="font-medium text-gray-900">
-                Open Source Advocate
-              </h4>
-              <p className="text-gray-600">
-                Maintainer of several open source projects with 10k+ combined
-                stars on GitHub
+                Delivered custom training programs for engineering teams
               </p>
             </div>
           </div>
