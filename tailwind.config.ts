@@ -18,7 +18,17 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ["Playfair Display", "Georgia", "serif"],
+        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+      },
       colors: {
+        gold: {
+          DEFAULT: "#D4A843",
+          dark: "#B8922E",
+          light: "#E4C06A",
+        },
+        charcoal: "#1A1A2E",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
