@@ -1,0 +1,36 @@
+{
+  "title": "AI-Powered Operations Platform",
+  "client": "Acme Corporation",
+  "date": "March 2026",
+  "status": "Active",
+  "sections": [
+    {
+      "title": "Executive Summary",
+      "content": "This proposal outlines a comprehensive approach to building an AI-powered operations platform that will transform your drive-through operations with real-time computer vision and predictive ordering.\n\nThe system will deliver:\n- **Sub-300ms** end-to-end processing latency\n- **+15%** revenue uplift per location\n- **99.9%** system uptime with edge-first architecture"
+    },
+    {
+      "title": "Scope of Work",
+      "content": "### Phase 1: Discovery & Architecture (Weeks 1-2)\n- Technical audit of existing infrastructure\n- Requirements gathering with operations team\n- Architecture design document and review\n\n### Phase 2: Core Platform Build (Weeks 3-8)\n- Edge inference pipeline on NVIDIA Jetson\n- Vehicle detection and license plate recognition\n- Customer lookup and prediction engine\n- POS system integration\n\n### Phase 3: Testing & Deployment (Weeks 9-12)\n- Load testing and performance optimization\n- Pilot deployment at first location\n- Staff training and documentation\n- Performance monitoring dashboard"
+    },
+    {
+      "title": "Approach",
+      "content": "We follow an **edge-first architecture** — all critical processing happens locally on-site, eliminating cloud dependency and ensuring sub-300ms response times.\n\nKey technical decisions:\n1. **NVIDIA Jetson Orin** for edge inference\n2. **Private LTE (CBRS)** for reliable site-wide connectivity\n3. **Event-driven architecture** for real-time data flow\n4. **Containerized deployment** for reproducible rollouts"
+    },
+    {
+      "title": "Timeline",
+      "content": "| Phase | Duration | Deliverables |\n|-------|----------|--------------|\n| Discovery | 2 weeks | Architecture doc, requirements |\n| Build | 6 weeks | Core platform, integrations |\n| Deploy | 4 weeks | Pilot site, monitoring, training |\n| **Total** | **12 weeks** | **Production system** |"
+    },
+    {
+      "title": "Investment",
+      "content": "### Engagement Options\n\n**Option A: Full Build**\nEnd-to-end platform development, deployment, and 3 months of support.\n\n**Option B: Architecture + Advisory**\nArchitecture design, vendor selection guidance, and team enablement.\n\n*Detailed pricing available upon request. All engagements include a 2-week discovery phase before commitment.*"
+    },
+    {
+      "title": "Terms",
+      "content": "- **Payment:** 30% upfront, 40% at midpoint, 30% on delivery\n- **IP:** Client owns all deliverables and source code\n- **Confidentiality:** Mutual NDA in effect\n- **Support:** 90 days post-launch support included\n- **Cancellation:** Either party may terminate with 14 days written notice"
+    },
+    {
+      "title": "About Jonathan Lyn-Shue",
+      "content": "Jonathan is a technology leader with 10+ years building data products, AI systems, and engineering teams. He serves as CIO at Anuba Technologies (edge AI for QSR) and as a senior consultant at a Fortune 100 agency.\n\n**Areas of expertise:**\n- Edge AI & computer vision systems\n- Engineering governance & IT strategy\n- Full-stack development & data pipelines\n- MCP protocol integrations\n\n**Contact:** jon@jonathanlynshue.com"
+    }
+  ]
+}
