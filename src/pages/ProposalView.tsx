@@ -17,6 +17,7 @@ interface ProposalData {
   client: string;
   date: string;
   status: string;
+  redirect?: string;
   sections: ProposalSection[];
 }
 
@@ -33,6 +34,10 @@ const ProposalView = () => {
         return res.json();
       })
       .then((data) => {
+        if (data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
         setProposal(data);
         setLoading(false);
       })
