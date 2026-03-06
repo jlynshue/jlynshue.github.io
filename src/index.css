@@ -5,7 +5,7 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 240 20% 14%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
@@ -112,7 +112,7 @@ html {
 
 /* Focus styles for accessibility */
 :focus-visible {
-  outline: 2px solid theme(colors.blue.500);
+  outline: 2px solid #D4A843;
   outline-offset: 2px;
 }
 
@@ -124,6 +124,24 @@ img {
 
 /* Improve text rendering */
 body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+/* Print styles for proposals */
+@media print {
+  .no-print, header, footer, nav {
+    display: none !important;
+  }
+  body {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #000;
+  }
+  .prose {
+    max-width: 100%;
+  }
 }
