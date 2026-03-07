@@ -13,6 +13,7 @@ const Proposals = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (code.trim()) {
+      if (window.gtag) window.gtag("event", "proposal_code_submitted", { code: code.trim().toLowerCase() });
       navigate(`/proposals/${code.trim().toLowerCase()}`);
     }
   };

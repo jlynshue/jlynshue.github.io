@@ -35,9 +35,11 @@ const ProposalView = () => {
       })
       .then((data) => {
         if (data.redirect) {
+          if (window.gtag) window.gtag("event", "proposal_redirect", { code, destination: data.redirect });
           window.location.href = data.redirect;
           return;
         }
+        if (window.gtag) window.gtag("event", "proposal_view", { code, title: data.title });
         setProposal(data);
         setLoading(false);
       })

@@ -7,8 +7,21 @@ import Index from "./pages/Index";
 import Proposals from "./pages/Proposals";
 import ProposalView from "./pages/ProposalView";
 import NotFound from "./pages/NotFound";
+import { usePageTracking } from "./hooks/usePageTracking";
 
 const queryClient = new QueryClient();
+
+const AppRoutes = () => {
+  usePageTracking();
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/proposals" element={<Proposals />} />
+      <Route path="/proposals/:code" element={<ProposalView />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -16,12 +29,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/proposals" element={<Proposals />} />
-          <Route path="/proposals/:code" element={<ProposalView />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
