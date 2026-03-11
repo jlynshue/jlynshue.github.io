@@ -58,12 +58,6 @@ const Header = () => {
                 {item.label}
               </button>
             ))}
-            <Link
-              to="/proposals"
-              className="text-sm font-medium text-gray-600 hover:text-charcoal transition-colors"
-            >
-              Proposals
-            </Link>
           </nav>
 
           <Button
@@ -94,13 +88,6 @@ const Header = () => {
                   {item.label}
                 </button>
               ))}
-              <Link
-                to="/proposals"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-gray-600 hover:text-charcoal py-1"
-              >
-                Proposals
-              </Link>
             </div>
           </nav>
         )}
