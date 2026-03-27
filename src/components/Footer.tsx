@@ -6,7 +6,7 @@ const Footer = () => {
           <div className="font-serif text-white text-lg">Jonathan Lyn-Shue</div>
           <div className="flex gap-6 text-sm">
             <a
-              href="mailto:jon@jonathanlynshue.com"
+              href="mailto:hello@jonathanlynshue.com"
               className="hover:text-white transition-colors"
             >
               Email

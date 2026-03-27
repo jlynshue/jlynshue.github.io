@@ -16,7 +16,7 @@ const HeroSection = () => {
         </FadeIn>
         <FadeIn delay={0.2}>
           <a
-            href="https://calendly.com"
+            href="https://calendly.com/jonathan-lynshue-anubatechnologies/30min"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center px-8 py-4 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
