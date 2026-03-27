@@ -8,7 +8,7 @@ const engagements = [
     title: "Real-Time Perception System for QSR",
     badge: "Edge AI",
     description:
-      "Designed and governed the engineering infrastructure for a real-time computer vision pipeline processing 10,000+ daily drive-through transactions at sub-300ms latency. Edge-first architecture on NVIDIA Jetson with private LTE connectivity.",
+      "Designed and governed the engineering infrastructure for a real-time computer vision pipeline delivering sub-300ms recognition-to-prediction loops across edge-deployed drive-through systems. Edge-first architecture on NVIDIA Jetson with private LTE connectivity.",
     outcomes: [
       "Sub-300ms end-to-end processing loop",
       "+2 cars/hour throughput improvement",
