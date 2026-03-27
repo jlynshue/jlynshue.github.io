@@ -14,7 +14,7 @@ const BrandStrip = () => {
       <div className="max-w-6xl mx-auto px-6">
         <FadeIn>
           <p className="text-center text-sm font-medium text-gray-400 tracking-widest uppercase mb-10">
-            Trusted by teams at
+            Brands I've delivered for
           </p>
         </FadeIn>
         <FadeIn delay={0.1}>

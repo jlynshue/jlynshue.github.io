@@ -18,7 +18,7 @@ const AboutSection = () => {
               Currently CIO at Anuba Technologies (edge AI for QSR) and independent technology consultant.
             </p>
             <p>
-              Previously Director of Data Instrumentation & Architecture at Razorfish (Publicis Groupe),
+              Previously Director of Data Architecture & Engineering at Razorfish (Publicis Groupe),
               where I led data science and engineering teams across enterprise analytics, data architecture,
               and product strategy for Fortune 500 clients.
             </p>

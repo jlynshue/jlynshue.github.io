@@ -7,7 +7,7 @@ const services = [
     icon: Settings,
     title: "Fractional CIO / IT Strategy",
     description:
-      "Engineering governance, Jira & Confluence architecture, BI dashboards, vendor evaluation, and team scaling for startups and growth-stage companies.",
+      "Bring senior technical leadership to your team without the full-time overhead. Engineering governance, workflow architecture, BI strategy, vendor evaluation, and team scaling for startups and growth-stage companies.",
     outcomes: ["Governance frameworks", "Roadmap clarity", "Team velocity"],
   },
   {
@@ -19,10 +19,10 @@ const services = [
   },
   {
     icon: Code,
-    title: "Technical Delivery",
+    title: "Product Engineering",
     description:
-      "React dashboards, Python data pipelines, MCP server integrations, API design, and CI/CD automation. From prototype to production.",
-    outcomes: ["Full-stack builds", "Data pipelines", "MCP integrations"],
+      "Production-grade dashboards, data pipelines, API architecture, and CI/CD automation. From prototype to scale.",
+    outcomes: ["Full-stack builds", "Data pipelines", "Cloud infrastructure"],
   },
 ];
 
