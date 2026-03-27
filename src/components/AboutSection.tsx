@@ -13,8 +13,14 @@ const AboutSection = () => {
         <FadeIn delay={0.1}>
           <div className="text-lg text-gray-600 leading-relaxed mb-12 max-w-3xl space-y-4">
             <p>
-              I'm a technology leader with 10+ years building data products, AI systems, and engineering teams.
+              I'm a technology leader with 15+ years building data products, AI systems, and engineering teams
+              for brands like Stellantis, Marriott, Samsung, and Southern Wine & Spirits.
               Currently CIO at Anuba Technologies (edge AI for QSR) and independent technology consultant.
+            </p>
+            <p>
+              Previously Director of Data Instrumentation & Architecture at Razorfish (Publicis Groupe),
+              where I led data science and engineering teams across enterprise analytics, data architecture,
+              and product strategy for Fortune 500 clients.
             </p>
             <p>
               I take on a limited number of engagements at a time — typically fractional CIO roles,

@@ -17,26 +17,26 @@ const engagements = [
   },
   {
     number: "02",
-    title: "Enterprise Analytics Governance",
-    badge: "Fortune 100",
+    title: "Data Architecture & Analytics — Stellantis",
+    badge: "Razorfish / Publicis",
     description:
-      "Led analytics governance and data strategy across 15+ brand sites for a Fortune 100 agency. Built automated QA pipelines, tagging validation frameworks, and cross-team coordination processes.",
+      "Led data instrumentation, architecture, and product development for Stellantis at Razorfish (Publicis Groupe). Managed CRM and Data Science pods, built analytics governance frameworks, and delivered enterprise data strategy across 7,100+ tracked work items.",
     outcomes: [
-      "15+ brand sites under unified governance",
-      "Automated QA cutting manual review by 60%",
-      "Sprint coordination across distributed teams",
+      "Director-level leadership across data science & engineering teams",
+      "CRM Analytics Maturity Model adopted across the account",
+      "Enterprise analytics QA pipelines cutting manual review by 60%",
     ],
   },
   {
     number: "03",
-    title: "MCP Orchestration Platform",
-    badge: "Infrastructure",
+    title: "Enterprise Analytics Governance",
+    badge: "Fortune 500",
     description:
-      "Deployed an 8-server Model Context Protocol orchestration layer unifying Jira, Microsoft 365, analytics platforms, and task management into a single AI-accessible workflow.",
+      "Built and governed analytics instrumentation across 15+ brand sites for major enterprise clients including Marriott, Samsung, and Southern Wine & Spirits. Designed tagging validation frameworks, automated QA pipelines, and cross-team coordination processes.",
     outcomes: [
-      "8 MCP servers with profile-based routing",
-      "Unified task aggregation across platforms",
-      "Keychain-based credential management",
+      "15+ brand sites under unified governance",
+      "Standardized data architecture across multi-brand portfolios",
+      "Sprint coordination across distributed agency teams",
     ],
   },
 ];
