@@ -20,9 +20,9 @@ const engagements = [
     title: "Data Architecture & Analytics — Stellantis",
     badge: "Razorfish / Publicis",
     description:
-      "Led data instrumentation, architecture, and product development for Stellantis at Razorfish (Publicis Groupe). Managed CRM and Data Science pods, built analytics governance frameworks, and delivered enterprise data strategy across 7,100+ tracked work items.",
+      "Led data instrumentation, architecture, and product development for Stellantis at Razorfish (Publicis Groupe). Managed CRM and Data Science pods, built analytics governance frameworks, and delivered enterprise data strategy across a complex multi-brand portfolio.",
     outcomes: [
-      "Director-level leadership across data science & engineering teams",
+      "Unified data architecture serving multiple business lines",
       "CRM Analytics Maturity Model adopted across the account",
       "Enterprise analytics QA pipelines cutting manual review by 60%",
     ],
@@ -32,11 +32,11 @@ const engagements = [
     title: "Enterprise Analytics Governance",
     badge: "Fortune 500",
     description:
-      "Built and governed analytics instrumentation across 15+ brand sites for major enterprise clients including Marriott, Samsung, and Southern Wine & Spirits. Designed tagging validation frameworks, automated QA pipelines, and cross-team coordination processes.",
+      "Built and governed analytics instrumentation across 15+ brand sites for major enterprise clients including Marriott, Samsung, and Southern Wine & Spirits. Designed tagging validation frameworks, automated QA pipelines, and cross-functional data strategy.",
     outcomes: [
       "15+ brand sites under unified governance",
       "Standardized data architecture across multi-brand portfolios",
-      "Sprint coordination across distributed agency teams",
+      "Cross-functional alignment across 4+ distributed teams",
     ],
   },
 ];

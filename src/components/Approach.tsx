@@ -19,8 +19,8 @@ const steps = [
   },
   {
     icon: ArrowRight,
-    title: "Handoff",
-    description: "Transfer knowledge, document systems, and ensure your team can own it going forward.",
+    title: "Delivery",
+    description: "Ship to production, document systems, and ensure your team has everything they need to scale.",
   },
 ];
 
@@ -33,7 +33,7 @@ const Approach = () => {
             How I Work
           </h2>
           <p className="text-gray-400 text-center mb-16 max-w-2xl mx-auto text-lg">
-            Every engagement follows a structured process — from understanding the problem to handing off a running system.
+            Every engagement follows a structured process — from understanding the problem to delivering a running system.
           </p>
         </FadeIn>
 
