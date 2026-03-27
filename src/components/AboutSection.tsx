@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import FadeIn from "@/components/FadeIn";
 
 const AboutSection = () => {
@@ -16,7 +14,7 @@ const AboutSection = () => {
           <div className="text-lg text-gray-600 leading-relaxed mb-12 max-w-3xl space-y-4">
             <p>
               I'm a technology leader with 10+ years building data products, AI systems, and engineering teams.
-              Currently CIO at Anuba Technologies (edge AI for QSR) and senior consultant at a Fortune 100 agency.
+              Currently CIO at Anuba Technologies (edge AI for QSR) and independent technology consultant.
             </p>
             <p>
               I take on a limited number of engagements at a time — typically fractional CIO roles,
@@ -29,7 +27,7 @@ const AboutSection = () => {
         <FadeIn delay={0.2}>
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
             <a
-              href="https://calendly.com"
+              href="https://calendly.com/jonathan-lynshue-anubatechnologies/30min"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-8 py-4 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors"
@@ -37,19 +35,11 @@ const AboutSection = () => {
               Schedule a Discovery Call
             </a>
             <a
-              href="mailto:jon@jonathanlynshue.com"
+              href="mailto:hello@jonathanlynshue.com"
               className="inline-flex items-center justify-center px-8 py-4 border-2 border-charcoal text-charcoal hover:bg-charcoal hover:text-white font-medium rounded-lg transition-colors"
             >
-              jon@jonathanlynshue.com
+              hello@jonathanlynshue.com
             </a>
-            <Link to="/proposals">
-              <Button
-                variant="ghost"
-                className="px-8 py-4 h-auto text-gray-500 hover:text-charcoal"
-              >
-                View Proposals Portal
-              </Button>
-            </Link>
           </div>
         </FadeIn>
 

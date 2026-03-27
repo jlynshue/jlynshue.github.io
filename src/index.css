@@ -131,17 +131,3 @@ body {
   line-height: 1.7;
 }
 
-/* Print styles for proposals */
-@media print {
-  .no-print, header, footer, nav {
-    display: none !important;
-  }
-  body {
-    font-size: 14px;
-    line-height: 1.5;
-    color: #000;
-  }
-  .prose {
-    max-width: 100%;
-  }
-}
