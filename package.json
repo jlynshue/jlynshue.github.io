@@ -4,12 +4,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run build:client",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build:all": "npm run build:client && npm run build:server",
+    "gcp-build": "npm run build:all",
+    "start": "node server/dist/index.js",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc -b tsconfig.app.json tsconfig.node.json && tsc -p tsconfig.server.json --noEmit"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^8.0.0",
+    "@google-cloud/tasks": "^6.1.0",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",

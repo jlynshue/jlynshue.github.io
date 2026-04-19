@@ -1,0 +1,17 @@
+{
+  "projectName": "Executive Workflow Business",
+  "projectDescription": "90-day execution plan for jonathanlynshue.com executive workflow sprint business",
+  "projectVersion": "1.0.0",
+  "models": {
+    "main": { "provider": "anthropic", "modelId": "claude-sonnet-4-20250514" },
+    "research": { "provider": "perplexity", "modelId": "sonar-pro" },
+    "fallback": { "provider": "anthropic", "modelId": "claude-sonnet-4-20250514" }
+  },
+  "global": {
+    "maxTokens": 4000,
+    "temperature": 0.7,
+    "defaultSubtasks": 5,
+    "defaultPriority": "medium",
+    "logLevel": "info"
+  }
+}

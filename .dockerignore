@@ -14,7 +14,6 @@ data
 load-ids.txt
 
 dist
-server
 tmp
 types
 .git
@@ -38,5 +37,4 @@ src/_tests_/dataset-comparision.csv
 packages/vcp-common/native-bridge/build
 packages/vcp-common/_tests_/dataset-ranking.csv
 node_modules/
-Dockerfile
 .gitignore

@@ -1,0 +1,563 @@
+{
+  "meta": {
+    "projectName": "Executive Workflow Business",
+    "projectVersion": "1.0.0",
+    "generatedAt": "2026-04-18T16:55:00Z",
+    "taskCount": 12,
+    "methodology": "anthropic-harness-design (Plan → Execute → Verify)"
+  },
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Technology Stack Deployment",
+      "description": "Set up the execution foundation: Firebase Hosting + Cloud Run + PostHog server-side measurement, plus Cal.com, Buffer, Dub.co, HubSpot CRM, and Tally.",
+      "status": "pending",
+      "priority": "high",
+      "dependencies": [],
+      "details": "Deploy the server-side measurement stack from 13-hosting-and-measurement-architecture.md. Every other task depends on these tools being operational. Firebase Hosting and Cloud Run for same-domain routing, PostHog for event analytics, Firestore/Cloud Tasks for event persistence and delivery, Cal.com for scheduling discovery calls, Buffer for LinkedIn scheduling, Dub.co for link tracking outside the site, HubSpot Free CRM for pipeline management, and Tally for lead capture forms. Harness verification: each tool must be live and tested with a real action (page view captured server-side, redirect tracked, test event scheduled, test form submitted).",
+      "testStrategy": "Verify: `/healthz` responds, a page view and CTA redirect appear in the event pipeline, Cal.com booking page accessible, Buffer connected to LinkedIn, Dub.co creating a tracked link, HubSpot pipeline visible, and Tally form submission reaches the webhook flow. All tools operational before declaring done.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Stand up Firebase Hosting + Cloud Run measurement foundation",
+          "description": "Deploy same-domain hosting rewrites, tracked CTA redirects, and server-side event capture",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Deploy Firebase Hosting rewrites to Cloud Run. Capture server-side page_viewed events for HTML requests, wire `/r/discovery-call` and `/r/lead-magnet`, and connect PostHog + HubSpot delivery. No frontend analytics tags."
+        },
+        {
+          "id": 2,
+          "title": "Set up Cal.com scheduling",
+          "description": "Configure 'Discovery Call — Executive Workflow' event type, connect calendar, embed on website",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Create account, set event type (30 min, 15 min buffer), connect Google/Outlook calendar, set availability windows, customize confirmation email with prep questions. Embed widget on website CTA sections."
+        },
+        {
+          "id": 3,
+          "title": "Set up Buffer for LinkedIn scheduling",
+          "description": "Connect LinkedIn account, test scheduling a post",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Free tier: 3 channels, 10 scheduled posts. Connect LinkedIn. Test by scheduling a draft post."
+        },
+        {
+          "id": 4,
+          "title": "Set up Dub.co for link tracking",
+          "description": "Create account, set up first tracked links for CTA and outbound",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Free tier: 25 links/month. Create links for: scheduling page, website homepage, lead magnet download."
+        },
+        {
+          "id": 5,
+          "title": "Set up Tally for lead capture forms",
+          "description": "Create lead magnet download form with email capture",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Create form for Executive Workflow Audit download. Fields: name, email, company, role. No branding on free tier. Set up webhook if needed."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Website Homepage Rewrite",
+      "description": "Rewrite homepage following the 8-section narrative architecture from 01-website-execution.md. This is the single highest-leverage website activity (Priority 4.8/5.0).",
+      "status": "pending",
+      "priority": "high",
+      "dependencies": [1],
+      "details": "Every other channel (LinkedIn, outbound, referrals) drives traffic here. If the homepage does not convert, nothing else matters. Follow the 8-section architecture: Hero → Proof Strip → Problem Section → Offer Section → How It Works → Engagement Examples → Fit Filter → Contact CTA. Use the canonical headline, workflow language, and specific copy from the execution doc. Harness verification: homepage must pass the copy checklist (leads with buyer pain, uses workflow language, specificity over breadth).",
+      "testStrategy": "Verify: All 8 sections live, CTA links to Cal.com, mobile-responsive (375px), copy passes the 6-point checklist from 01-website-execution.md, Plausible tracking CTA clicks.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Draft Hero section copy and implement",
+          "description": "Canonical headline, subhead, primary CTA (Schedule a Discovery Call), secondary link (See How The Sprint Works)",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Headline: 'I build AI workflow systems that remove executive reporting and coordination bottlenecks.' Subhead: 'For CIO, COO, and ops-led teams using Microsoft 365, Jira, Confluence, and Slack or Teams. One workflow. Ten business days. Clearer decisions. Less reporting drag.' CTA must be high-contrast, above fold on desktop and mobile."
+        },
+        {
+          "id": 2,
+          "title": "Build Proof Strip section",
+          "description": "3-5 recognizable brand logos or one-line proof points, grayscale, sparse",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Establish real operating environment credibility. Grayscale logos on light background. One line of supporting text per proof point. No click-through needed."
+        },
+        {
+          "id": 3,
+          "title": "Build Problem Section — 'Where Executive Workflows Break'",
+          "description": "4 pain points in icon + short text format",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Pain points: (1) Reporting stitched together manually, (2) Decisions delayed by scattered evidence, (3) Action items lost between meetings/docs/chat, (4) AI outputs not trusted because not source-linked. Each recognizable in 5 seconds. No jargon."
+        },
+        {
+          "id": 4,
+          "title": "Build Offer Section — 'The Executive Workflow Sprint'",
+          "description": "Diagnostic ($2.5k) + Sprint ($12k) in clean card format with pricing",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Show pricing transparently. Include 'diagnostic fee credited toward sprint' trust signal. Card or step format."
+        },
+        {
+          "id": 5,
+          "title": "Build How It Works, Engagement Examples, Fit Filter, and Contact CTA sections",
+          "description": "Complete remaining 4 sections of homepage",
+          "status": "pending",
+          "dependencies": [1, 2, 3, 4],
+          "details": "How It Works: 4-step flow (Discovery → Diagnostic → Sprint → Retainer). Engagement Examples: 2-3 problem/outcome cards. Fit Filter: right-for/not-right-for checklist. Contact CTA: full-width with Cal.com embed."
+        },
+        {
+          "id": 6,
+          "title": "Mobile responsiveness pass",
+          "description": "Ensure all sections readable on 375px, sticky CTA on mobile",
+          "status": "pending",
+          "dependencies": [5],
+          "details": "Hero CTA visible without scrolling. Proof strip stacks vertically. Consider fixed bottom CTA on mobile."
+        },
+        {
+          "id": 7,
+          "title": "Update meta tags and OG images for social sharing",
+          "description": "Set proper title, description, and OpenGraph image for LinkedIn/social preview",
+          "status": "pending",
+          "dependencies": [1],
+          "details": "Title should match canonical positioning. OG image should be clean, professional, match brand. Description should be the supporting line."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "LinkedIn Profile Overhaul",
+      "description": "Complete LinkedIn profile rewrite following 02-linkedin-execution.md. Profile is the first thing a buyer sees after encountering content (Priority 4.9/5.0).",
+      "status": "pending",
+      "priority": "high",
+      "dependencies": [],
+      "details": "If the profile reads like a generic resume, the content investment is wasted. Overhaul: headline (what you do + ICP + stack), About section (problem → what I do → how it works → background → CTA), Featured section (lead magnets + articles), Experience section (reframe for outcomes), banner image. Harness verification: profile must be readable as a clear workflow offer, not a resume.",
+      "testStrategy": "Verify: Headline mentions workflow + ICP + systems. About includes offer ladder with pricing. Featured has at least 1 pinned asset. Experience reframed for outcomes. Banner is professional and on-brand.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Rewrite LinkedIn headline",
+          "description": "Target: 'I build AI workflow systems that remove executive reporting bottlenecks | CIO & Ops Teams | Microsoft 365 + Jira/Confluence'",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Lead with what you do, not your title. Include ICP and tech stack for qualification. No buzzwords."
+        },
+        {
+          "id": 2,
+          "title": "Rewrite LinkedIn About section",
+          "description": "Problem → What I do → How it works (offer ladder) → Background → CTA with scheduling link",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Follow the exact structure from 02-linkedin-execution.md. Include pricing in the offer ladder. End with scheduling link."
+        },
+        {
+          "id": 3,
+          "title": "Update LinkedIn Featured section",
+          "description": "Pin: Executive Workflow Audit (lead magnet), 'Why Executive Reporting Is Still Manual' (article), offer explainer",
+          "status": "pending",
+          "dependencies": [],
+          "details": "These assets need to be created first. Pin placeholders initially if assets aren't ready. Update as lead magnets and articles are published."
+        },
+        {
+          "id": 4,
+          "title": "Reframe LinkedIn Experience section",
+          "description": "Rewrite entries to emphasize workflow/systems outcomes, scale, governance, not job duties",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Focus on: workflow and systems outcomes, scale and complexity handled, enterprise credibility signals, governance and trust patterns."
+        },
+        {
+          "id": 5,
+          "title": "Create and upload LinkedIn banner image",
+          "description": "Clean, professional, on-brand. Optional: subtle text overlay with canonical positioning line",
+          "status": "pending",
+          "dependencies": [],
+          "details": "No stock AI imagery, no neon gradients. Match the editorial, restrained website visual style. Use Canva free tier."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Content Publishing System — Month 1",
+      "description": "Establish the content publishing cadence: 12 LinkedIn posts (3/week), 2 articles, first lead magnet. From 03-content-publishing-plan.md.",
+      "status": "pending",
+      "priority": "high",
+      "dependencies": [3],
+      "details": "Content exists to create qualified demand, sharpen the category, and support discovery/sales conversations. 4 editorial pillars: Workflow Bottlenecks (35%), Systems Integration (25%), Trustworthy AI (25%), Operator Proof (15%). Follow the compounding content loop: insight → post → track → expand winners → derivative posts → lead magnet. Harness verification: 12 posts published, each passing the 5-point quality filter.",
+      "testStrategy": "Verify: 12 LinkedIn posts published in Month 1, each tied to an editorial pillar, each passing the quality checklist (speaks to buyer pain, reinforces workflow wedge, signals operator credibility, supports discovery call motion, specific enough for CIO/COO recognition).",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Batch-create Week 1 LinkedIn posts (3 posts)",
+          "description": "Mon: 'The hidden reporting tax', Wed: 'Your stack is not your workflow', Fri: 'What buyers need from AI: trust, not novelty'",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Use templates from templates/linkedin-post-template.md. Mon = Operator Observation, Wed = Framework, Fri = Proof/Trust. Schedule via Buffer."
+        },
+        {
+          "id": 2,
+          "title": "Write and publish Article 1: 'Why executive reporting is still manual'",
+          "description": "LinkedIn article, 500-800 words, Workflow Bottlenecks pillar",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Expand on Week 1 post themes. CTA: Schedule a Discovery Call. Cross-post to website blog if created."
+        },
+        {
+          "id": 3,
+          "title": "Batch-create Week 2 LinkedIn posts (3 posts)",
+          "description": "Mon: '7 hidden workflow steps', Wed: 'Fastest AI ROI is one workflow', Fri: 'Three signs your update needs redesign'",
+          "status": "pending",
+          "dependencies": [1],
+          "details": "Continue pillar rotation. Track performance of Week 1 posts to inform adjustments."
+        },
+        {
+          "id": 4,
+          "title": "Create 'Executive Workflow Audit' lead magnet",
+          "description": "PDF checklist showing where reporting and coordination waste hides. Top-of-funnel authority asset.",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Format: PDF checklist or interactive framework. Create with Canva. Set up Tally download form. Distribute via LinkedIn Featured + website download + outbound attachment."
+        },
+        {
+          "id": 5,
+          "title": "Batch-create Week 3-4 LinkedIn posts (6 posts)",
+          "description": "Weeks 3-4 posts covering Trustworthy AI, Systems Integration, and Offer-Adjacent themes",
+          "status": "pending",
+          "dependencies": [3],
+          "details": "Week 3: source-linked outputs, automation vs workflow system, 3-day diagnostic. Week 4: manual coordination, trust failures, who the sprint is for. Include 1 offer-adjacent post with explicit CTA."
+        },
+        {
+          "id": 6,
+          "title": "Create 'Weekly Readout Redesign Template' lead magnet",
+          "description": "Before/after template for redesigning leadership reporting workflow. Bridge from content to diagnostic.",
+          "status": "pending",
+          "dependencies": [4],
+          "details": "Format: before/after template with instructions. Publish as LinkedIn article + website download."
+        },
+        {
+          "id": 7,
+          "title": "Write and publish Article 2: 'How to redesign a cross-system workflow'",
+          "description": "LinkedIn article, 500-800 words, Systems Integration pillar",
+          "status": "pending",
+          "dependencies": [2],
+          "details": "Expand the best-performing post from Weeks 1-2. CTA: Discovery call."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Warm Outbound Campaign",
+      "description": "Build target list of 50 warm contacts and execute outreach sequence. Fastest path to first revenue (Priority 4.7/5.0). From 05-marketing-campaigns.md.",
+      "status": "pending",
+      "priority": "high",
+      "dependencies": [1, 3],
+      "details": "Tier 1 (20 contacts): former colleagues/clients. Tier 2 (20): adjacent operators. Tier 3 (10): selective cold. Follow the message templates and cadence from the execution doc. Follow-up rules: Day 3 bump, Day 7 value-add, Day 14 final. After 3 touches, stop. Harness verification: 40+ messages sent over 4 weeks, response rates tracked.",
+      "testStrategy": "Verify: 50-contact list assembled, 40+ messages sent over 4 weeks, response rates logged in HubSpot, follow-up rules respected. Success: >40% warm response rate, >10% cold response rate.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Assemble 50-contact target list",
+          "description": "Tier 1: 20 former colleagues/clients. Tier 2: 20 adjacent operators. Tier 3: 10 selective cold.",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Import contacts into HubSpot. Tag by tier. Add workflow_pain and systems_stack properties where known."
+        },
+        {
+          "id": 2,
+          "title": "Send Week 1 outbound — 10 Tier 1 + 5 Tier 2 messages",
+          "description": "Use warm and adjacent message templates from 05-marketing-campaigns.md",
+          "status": "pending",
+          "dependencies": [1],
+          "details": "Personalize each message with shared context or specific observation. Log in HubSpot."
+        },
+        {
+          "id": 3,
+          "title": "Send Week 2 outbound — 5 Tier 1 + 10 Tier 2 + 3 Tier 3",
+          "description": "Expand to adjacent and selective cold contacts",
+          "status": "pending",
+          "dependencies": [2],
+          "details": "Follow up on Week 1 non-responders (Day 3 bump). Include proof point in Tier 3 messages."
+        },
+        {
+          "id": 4,
+          "title": "Execute Week 3-4 follow-ups and remaining outbound",
+          "description": "Day 7 value-add follow-ups, Day 14 final follow-ups, remaining Tier 3 sends",
+          "status": "pending",
+          "dependencies": [3],
+          "details": "Share relevant LinkedIn posts or lead magnets in follow-ups. Move non-responders to nurture list after 3 touches."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Referral Activation Campaign",
+      "description": "Identify 10 trusted contacts for referral asks. Fastest trust compression mechanism (Priority 4.5/5.0). From 05-marketing-campaigns.md.",
+      "status": "pending",
+      "priority": "high",
+      "dependencies": [3],
+      "details": "Identify contacts who have seen your work, know ICP buyers, and would give genuine recommendations. Use referral ask template. Track referrals in a simple table. Harness verification: 10 asks sent, referrals tracked.",
+      "testStrategy": "Verify: 10 referral asks sent by end of Week 4. Target: 2+ referrals received in Month 1. Track in referral log.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Identify 10 referral contacts and send asks (batch 1: 5 in Week 2)",
+          "description": "Select 5 trusted contacts, send personalized referral ask using template",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Use template from 05-marketing-campaigns.md. Track: contact, date asked, response, referral name, contacted?, outcome."
+        },
+        {
+          "id": 2,
+          "title": "Send remaining 5 referral asks (Week 3)",
+          "description": "Complete the 10-contact referral ask list",
+          "status": "pending",
+          "dependencies": [1],
+          "details": "Follow up on batch 1 non-responders. Log all results."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Sales Enablement Setup",
+      "description": "Configure HubSpot pipeline, create proposal templates, build discovery call prep materials. From 06-sales-enablement.md.",
+      "status": "pending",
+      "priority": "high",
+      "dependencies": [1],
+      "details": "HubSpot pipeline: 10 stages (Identified → Retainer Candidate). Custom contact properties: workflow_pain, systems_stack, icp_fit_score, source_channel, qualification_status. Create: diagnostic proposal template, sprint proposal template, one-page offer summary PDF, post-call follow-up email template. Harness verification: pipeline functional, templates ready for use.",
+      "testStrategy": "Verify: HubSpot pipeline has all 10 stages, custom properties created, at least 3 sales assets (diagnostic proposal, sprint proposal, offer summary) created and ready to use.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Configure HubSpot deal pipeline — 'Executive Workflow Sprint'",
+          "description": "Create 10-stage pipeline: Identified → Contacted → Engaged → Discovery Scheduled → Qualified → Diagnostic Proposed → Diagnostic Sold → Sprint Proposed → Sprint Sold → Retainer Candidate",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Each stage has defined exit criteria from 06-sales-enablement.md."
+        },
+        {
+          "id": 2,
+          "title": "Add custom HubSpot contact properties",
+          "description": "workflow_pain (text), systems_stack (multi-select), icp_fit_score (number), source_channel (dropdown), qualification_status (dropdown)",
+          "status": "pending",
+          "dependencies": [1],
+          "details": "systems_stack options: M365, Jira, Confluence, Slack, Teams, Other. source_channel: LinkedIn, Referral, Warm outbound, Cold outbound, Website."
+        },
+        {
+          "id": 3,
+          "title": "Create diagnostic proposal template (1-page)",
+          "description": "Problem Statement + Scope + Deliverables + Investment + Timeline + Next Step",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Google Doc or PDF. Problem in buyer's language. $2,500 credited toward sprint. Use structure from 06-sales-enablement.md."
+        },
+        {
+          "id": 4,
+          "title": "Create sprint proposal template (2-page)",
+          "description": "Current State + Future State + Systems + Outputs + Boundaries + Timeline + Investment + Success Criteria",
+          "status": "pending",
+          "dependencies": [3],
+          "details": "$12,000, 60/40 payment structure. 10 business days. Use structure from 06-sales-enablement.md."
+        },
+        {
+          "id": 5,
+          "title": "Create one-page offer summary PDF",
+          "description": "Compact overview of the offer ladder: Discovery → Diagnostic → Sprint → Retainer",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Attach to outbound follow-ups and discovery call confirmations. Use Canva or Google Docs."
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Social Media Channels Setup",
+      "description": "Clean up GitHub profile, set up engagement protocols, configure secondary channels. From 04-social-media-execution.md.",
+      "status": "pending",
+      "priority": "medium",
+      "dependencies": [3],
+      "details": "GitHub: pin 2-3 relevant repos, write clear READMEs, create one public workflow artifact. LinkedIn engagement: 15 min/day protocol. X/Twitter: deferred, no investment in Phase 1. Newsletter: deferred until content inventory exists. Harness verification: GitHub profile supports credibility when buyer clicks through.",
+      "testStrategy": "Verify: GitHub profile has 2-3 pinned repos with clear READMEs. LinkedIn engagement protocol running daily. GitHub link added to LinkedIn profile.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Clean up GitHub profile",
+          "description": "Pin 2-3 relevant repos, update READMEs, archive irrelevant repos",
+          "status": "pending",
+          "dependencies": [],
+          "details": "READMEs should emphasize systems/workflow work. Remove or archive repos that don't support credibility."
+        },
+        {
+          "id": 2,
+          "title": "Create one public workflow artifact on GitHub",
+          "description": "Open-source a workflow mapping template or decision routing pattern",
+          "status": "pending",
+          "dependencies": [1],
+          "details": "Well-documented repo with README, examples, usage instructions. Technical proof that you can build, not just consult."
+        },
+        {
+          "id": 3,
+          "title": "Establish daily LinkedIn engagement protocol",
+          "description": "15 min/day: reply to comments, comment on 3-5 ICP posts, check DMs",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Morning 10 min: notifications + 3-5 ICP comments. Afternoon 5 min: DMs. Never pitch in comments."
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Website Supporting Pages",
+      "description": "Build Workflow Sprint page and Workflow Diagnostic page. From 01-website-execution.md Phase 2.",
+      "status": "pending",
+      "priority": "medium",
+      "dependencies": [2],
+      "details": "Sprint page (Priority 3.8/5.0): expanded scope, day-by-day breakdown, default workflow types, included/excluded, customer outcomes, CTA. Diagnostic page (Priority 3.5/5.0): what it covers, 3-day timeline, deliverables, pricing, CTA. Both pages linked from homepage CTAs.",
+      "testStrategy": "Verify: Sprint page has full delivery model breakdown and CTA. Diagnostic page has scope, pricing, and CTA. Both mobile-responsive. Links from homepage work.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Build Workflow Sprint dedicated page",
+          "description": "Expanded sprint scope, day-by-day delivery model, default workflow types, included/excluded, outcomes, CTA",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Content from 01-product-strategy.md delivery model section. CTA: Schedule a Discovery Call."
+        },
+        {
+          "id": 2,
+          "title": "Build Workflow Diagnostic page",
+          "description": "What diagnostic covers, 3-day timeline, deliverables, pricing ($2.5k credited), CTA",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Make the paid diagnostic tangible and easy to buy. CTA: Schedule a Discovery Call."
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "A/B Testing PODs Setup",
+      "description": "Deploy GrowthBook, configure 3 testing PODs (Website, LinkedIn, Outbound). From 07-ab-testing-strategy.md.",
+      "status": "pending",
+      "priority": "medium",
+      "dependencies": [2, 4],
+      "details": "POD 1 Website: GrowthBook SDK, hero headline test, CTA test, proof strip test, pricing visibility test. POD 2 LinkedIn: hook style rotation, post length, CTA placement, posting time. POD 3 Outbound: subject line, pain framing, proof attachment. Start LinkedIn/Outbound PODs Week 1, Website POD Week 5+. Harness verification: each POD has defined hypothesis, primary metric, minimum sample size, and decision criteria before launch.",
+      "testStrategy": "Verify: GrowthBook deployed by Week 5. LinkedIn test results logged after 4 weeks. Outbound test results logged after 3 weeks. Each test has hypothesis + success threshold defined before running.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Install GrowthBook SDK on website",
+          "description": "React SDK integration, connect to Plausible for metrics",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Free cloud tier (10k users/month). Configure for React SPA. Connect event tracking to Plausible."
+        },
+        {
+          "id": 2,
+          "title": "Configure and launch Hero Headline A/B test",
+          "description": "3 variants: Control (canonical), Pain-led, Outcome-led. Primary metric: CTA click rate.",
+          "status": "pending",
+          "dependencies": [1],
+          "details": "Minimum 100 visitors per variant. 2 week duration. Decision rule: highest CTA click rate wins, <5% difference keeps control."
+        },
+        {
+          "id": 3,
+          "title": "Track LinkedIn POD test results (Weeks 1-4)",
+          "description": "Log hook style, post length, CTA placement, and posting time test results",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Use spreadsheet or experiment log template. Track impressions, comments from ICP titles, profile visits, saves per variant."
+        },
+        {
+          "id": 4,
+          "title": "Track Outbound POD test results (Weeks 1-3)",
+          "description": "Log subject line, pain framing, and proof attachment test results",
+          "status": "pending",
+          "dependencies": [],
+          "details": "10 messages per variant minimum. Track open rate, reply rate, positive reply sentiment."
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Certification Program — Tier 1",
+      "description": "Begin MS-102 (Microsoft 365 Administrator) and ACP-620 (Atlassian Jira Administration) certification study. From 08-certification-strategy.md.",
+      "status": "pending",
+      "priority": "low",
+      "dependencies": [],
+      "details": "Month 1: no cert study (focus on revenue). Month 2: begin MS-102 study (Microsoft Learn, free, 5 hrs/week). Month 3: take MS-102 exam ($165), begin ACP-620 study (Atlassian University, free). Month 4: take ACP-620 exam ($250). Total Tier 1 budget: ~$415. Harness verification: certs earned and displayed on LinkedIn profile + website.",
+      "testStrategy": "Verify: MS-102 passed by Month 3. ACP-620 passed by Month 4. Both added to LinkedIn Certifications section and website proof strip.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Begin MS-102 study plan (Month 2)",
+          "description": "Start Microsoft Learn MS-102 path, 5 hours/week",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Free study resources on Microsoft Learn. Focus on M365 admin, security, compliance, workflows."
+        },
+        {
+          "id": 2,
+          "title": "Schedule and take MS-102 exam (Month 3)",
+          "description": "$165 exam fee. Target: pass on first attempt.",
+          "status": "pending",
+          "dependencies": [1],
+          "details": "Book exam at Pearson VUE. Add cert to LinkedIn immediately after passing."
+        },
+        {
+          "id": 3,
+          "title": "Begin ACP-620 study plan (Month 3)",
+          "description": "Start Atlassian University courses, 5 hours/week",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Free courses on Atlassian University. Focus on Jira project management, workflows, automation."
+        },
+        {
+          "id": 4,
+          "title": "Schedule and take ACP-620 exam (Month 4)",
+          "description": "$250 exam fee. Target: pass on first attempt.",
+          "status": "pending",
+          "dependencies": [3],
+          "details": "Book exam. Add cert to LinkedIn immediately after passing."
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Validation System & Weekly Reviews",
+      "description": "Establish experiment logging, KPI dashboard tracking, and weekly Friday review ritual. From 11-validation-experiments.md and 12-kpi-dashboard.md.",
+      "status": "pending",
+      "priority": "high",
+      "dependencies": [1],
+      "details": "Track 4 core hypotheses: H1 (buyer demand exists), H2 (personal brand sufficient), H3 (workflow language resonates), H4 (diagnostic bridge works). Use experiment log template for all tests. KPI dashboard: 5 tiers (Revenue, Pipeline, Leading, Content, Quality Filters). Weekly Friday review: 30 min (numbers, quality, experiments, content, next week plan). Monthly review: 1 hour (full assessment against 30/60/90 scorecards). Harness verification: reviews happening every Friday, experiment log updated, validation signals assessed at 30/60/90 days.",
+      "testStrategy": "Verify: Weekly review completed every Friday for 12 weeks. Experiment log has entries for all active tests. 30-day scorecard assessed at Week 4, 60-day at Week 8, 90-day at Week 12.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set up experiment tracking spreadsheet or system",
+          "description": "Create tracking for all active experiments using the template from templates/experiment-log-template.md",
+          "status": "pending",
+          "dependencies": [],
+          "details": "Can be a simple spreadsheet, Obsidian file, or Notion table. Must track: date range, hypothesis, variants, primary metric, sample size, result, decision, next action."
+        },
+        {
+          "id": 2,
+          "title": "Conduct first weekly review (Friday Week 1)",
+          "description": "Use templates/weekly-review-template.md. Fill in all metrics, quality filters, learnings, next week plan.",
+          "status": "pending",
+          "dependencies": [1],
+          "details": "30 minutes: numbers check (10 min), quality check (5 min), experiment review (5 min), content review (5 min), next week planning (5 min)."
+        },
+        {
+          "id": 3,
+          "title": "30-Day validation scorecard assessment (Week 4)",
+          "description": "Score against thresholds: 10+ buyer conversations, 3+ discovery calls, 1+ diagnostic sold. Decision: continue/narrow/pivot.",
+          "status": "pending",
+          "dependencies": [2],
+          "details": "From 07-validation-signals.md. If 3+ met: continue. If conversations exist but language broad: narrow. If <3 conversations: pivot."
+        }
+      ]
+    }
+  ]
+}
