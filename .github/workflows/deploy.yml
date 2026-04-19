@@ -1,48 +1,167 @@
-name: Deploy to GitHub Pages
+name: Deploy Firebase Hosting + Cloud Run
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
   id-token: write
+  pull-requests: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+env:
+  NODE_VERSION: "20"
 
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
       - name: Install dependencies
         run: npm ci
-      - name: Build
-        run: npm run build
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      - name: Run tests
+        run: npm run test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build web + server
+        run: npm run build:all
+
+  preview:
+    if: github.event_name == 'pull_request'
+    needs: verify
     runs-on: ubuntu-latest
-    needs: build
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4 
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy preview Cloud Run service
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: jonathanlynshue-site-pr-${{ github.event.pull_request.number }}
+          region: ${{ secrets.GCP_REGION }}
+          source: .
+          flags: --allow-unauthenticated
+          env_vars: |
+            NODE_ENV=preview
+            BASE_URL=${{ secrets.PREVIEW_BASE_URL }}
+            DISCOVERY_CALL_URL=${{ secrets.DISCOVERY_CALL_URL }}
+            LEAD_MAGNET_URL=${{ secrets.LEAD_MAGNET_URL }}
+            TRACKING_SECRET=${{ secrets.TRACKING_SECRET }}
+            INTERNAL_API_TOKEN=${{ secrets.INTERNAL_API_TOKEN }}
+            CALCOM_WEBHOOK_SECRET=${{ secrets.CALCOM_WEBHOOK_SECRET }}
+            TALLY_WEBHOOK_SECRET=${{ secrets.TALLY_WEBHOOK_SECRET }}
+            POSTHOG_HOST=${{ secrets.POSTHOG_HOST }}
+            POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}
+            HUBSPOT_TOKEN=${{ secrets.HUBSPOT_TOKEN }}
+            HUBSPOT_STAGE_EVENT_MAP_JSON=${{ secrets.HUBSPOT_STAGE_EVENT_MAP_JSON }}
+            FIRESTORE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+            CLOUD_TASKS_PROJECT=${{ secrets.GCP_PROJECT_ID }}
+            CLOUD_TASKS_LOCATION=${{ secrets.GCP_REGION }}
+            CLOUD_TASKS_QUEUE=${{ secrets.CLOUD_TASKS_QUEUE }}
+
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+
+      - name: Render Firebase config
+        run: node scripts/render-firebase-config.mjs
+        env:
+          FIREBASE_CLOUD_RUN_SERVICE_ID: jonathanlynshue-site-pr-${{ github.event.pull_request.number }}
+          FIREBASE_CLOUD_RUN_REGION: ${{ secrets.GCP_REGION }}
+
+      - name: Deploy Firebase preview channel
+        run: firebase hosting:channel:deploy pr-${{ github.event.pull_request.number }} --project ${{ secrets.FIREBASE_PROJECT_ID }} --config firebase.generated.json --expires 7d
+
+  production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy production Cloud Run service
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: jonathanlynshue-site-backend
+          region: ${{ secrets.GCP_REGION }}
+          source: .
+          flags: --allow-unauthenticated
+          env_vars: |
+            NODE_ENV=production
+            BASE_URL=https://jonathanlynshue.com
+            COOKIE_DOMAIN=jonathanlynshue.com
+            DISCOVERY_CALL_URL=${{ secrets.DISCOVERY_CALL_URL }}
+            LEAD_MAGNET_URL=${{ secrets.LEAD_MAGNET_URL }}
+            TRACKING_SECRET=${{ secrets.TRACKING_SECRET }}
+            INTERNAL_API_TOKEN=${{ secrets.INTERNAL_API_TOKEN }}
+            CALCOM_WEBHOOK_SECRET=${{ secrets.CALCOM_WEBHOOK_SECRET }}
+            TALLY_WEBHOOK_SECRET=${{ secrets.TALLY_WEBHOOK_SECRET }}
+            POSTHOG_HOST=${{ secrets.POSTHOG_HOST }}
+            POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}
+            HUBSPOT_TOKEN=${{ secrets.HUBSPOT_TOKEN }}
+            HUBSPOT_STAGE_EVENT_MAP_JSON=${{ secrets.HUBSPOT_STAGE_EVENT_MAP_JSON }}
+            FIRESTORE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+            CLOUD_TASKS_PROJECT=${{ secrets.GCP_PROJECT_ID }}
+            CLOUD_TASKS_LOCATION=${{ secrets.GCP_REGION }}
+            CLOUD_TASKS_QUEUE=${{ secrets.CLOUD_TASKS_QUEUE }}
+
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+
+      - name: Render Firebase config
+        run: node scripts/render-firebase-config.mjs
+        env:
+          FIREBASE_CLOUD_RUN_SERVICE_ID: jonathanlynshue-site-backend
+          FIREBASE_CLOUD_RUN_REGION: ${{ secrets.GCP_REGION }}
+
+      - name: Deploy Firebase Hosting
+        run: firebase deploy --only hosting --project ${{ secrets.FIREBASE_PROJECT_ID }} --config firebase.generated.json

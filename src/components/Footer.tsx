@@ -1,3 +1,5 @@
+import { discoveryCallHref } from "@/lib/tracking";
+
 const Footer = () => {
   return (
     <footer className="bg-charcoal text-gray-400 py-12">
@@ -20,12 +22,10 @@ const Footer = () => {
               LinkedIn
             </a>
             <a
-              href="https://github.com/jlynshue"
-              target="_blank"
-              rel="noopener noreferrer"
+              href={discoveryCallHref("footer")}
               className="hover:text-white transition-colors"
             >
-              GitHub
+              Book a Meeting
             </a>
           </div>
           <div className="text-sm">

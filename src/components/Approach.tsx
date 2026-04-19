@@ -1,57 +1,75 @@
 import FadeIn from "@/components/FadeIn";
-import { Search, Lightbulb, Rocket, ArrowRight } from "lucide-react";
 
 const steps = [
   {
-    icon: Search,
-    title: "Discovery",
-    description: "Understand your business, technical landscape, team capabilities, and constraints.",
+    number: "01",
+    title: "Discovery Call",
+    description:
+      "A 30-minute conversation to qualify the pain. Is the workflow narrow, recurring, and tied to real operating costs?",
+    detail: "Free",
   },
   {
-    icon: Lightbulb,
-    title: "Strategy",
-    description: "Define architecture, roadmap, and success metrics aligned with business outcomes.",
+    number: "02",
+    title: "Workflow Diagnostic",
+    description:
+      "Map the workflow, quantify waste, identify system boundaries, and define success criteria.",
+    detail: "$2,500 · 3 days",
   },
   {
-    icon: Rocket,
-    title: "Execution",
-    description: "Build, test, and ship with clear milestones, sprint cadence, and continuous feedback.",
+    number: "03",
+    title: "Executive Workflow Sprint",
+    description:
+      "Implement one workflow end to end — integrate systems, build the output layer, validate quality, and hand off.",
+    detail: "$12,000 · 10 days",
   },
   {
-    icon: ArrowRight,
-    title: "Delivery",
-    description: "Ship to production, document systems, and ensure your team has everything they need to scale.",
+    number: "04",
+    title: "Workflow Tuning Retainer",
+    description:
+      "Stabilize, expand, and monitor. One incremental improvement per month plus adoption support.",
+    detail: "$3,500/mo · Ongoing",
   },
 ];
 
 const Approach = () => {
   return (
-    <section id="approach" className="py-24 bg-charcoal text-white">
-      <div className="max-w-6xl mx-auto px-6">
+    <section id="approach" className="py-24 bg-white">
+      <div className="max-w-4xl mx-auto px-6">
         <FadeIn>
-          <h2 className="font-serif text-3xl md:text-5xl font-medium mb-4 text-center">
-            How I Work
+          <h2 className="font-serif text-3xl md:text-4xl font-medium text-charcoal text-center mb-4">
+            From Workflow Friction To Working System
           </h2>
-          <p className="text-gray-400 text-center mb-16 max-w-2xl mx-auto text-lg">
-            Every engagement follows a structured process — from understanding the problem to delivering a running system.
+          <p className="text-gray-500 text-center mb-16 max-w-2xl mx-auto">
+            A clear path from diagnosis to implementation — no ambiguous roadmaps.
           </p>
         </FadeIn>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="space-y-8">
           {steps.map((step, index) => (
-            <FadeIn key={step.title} delay={index * 0.1}>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gold/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <step.icon className="w-7 h-7 text-gold" strokeWidth={1.5} />
+            <FadeIn key={index} delay={index * 0.1}>
+              <div className="flex gap-6 items-start">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center">
+                  <span className="text-gold font-semibold text-sm">
+                    {step.number}
+                  </span>
                 </div>
-                <div className="text-gold text-sm font-medium mb-2">
-                  Step {index + 1}
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-3 mb-1">
+                    <h3 className="font-semibold text-charcoal text-lg">
+                      {step.title}
+                    </h3>
+                    <span className="text-xs text-gray-400 font-medium">
+                      {step.detail}
+                    </span>
+                  </div>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  {step.description}
-                </p>
               </div>
+              {index < steps.length - 1 && (
+                <div className="ml-6 border-l-2 border-gray-100 h-4" />
+              )}
             </FadeIn>
           ))}
         </div>

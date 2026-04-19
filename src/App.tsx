@@ -4,20 +4,20 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Sprint from "./pages/Sprint";
+import Diagnostic from "./pages/Diagnostic";
 import NotFound from "./pages/NotFound";
-import { usePageTracking } from "./hooks/usePageTracking";
 
 const queryClient = new QueryClient();
 
-const AppRoutes = () => {
-  usePageTracking();
-  return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<Index />} />
+    <Route path="/sprint" element={<Sprint />} />
+    <Route path="/diagnostic" element={<Diagnostic />} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

@@ -1,0 +1,47 @@
+{
+  "hosting": {
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "headers": [
+      {
+        "source": "/assets/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=31536000,immutable"
+          }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/r/**",
+        "run": {
+          "serviceId": "__CLOUD_RUN_SERVICE_ID__",
+          "region": "__CLOUD_RUN_REGION__"
+        }
+      },
+      {
+        "source": "/webhooks/**",
+        "run": {
+          "serviceId": "__CLOUD_RUN_SERVICE_ID__",
+          "region": "__CLOUD_RUN_REGION__"
+        }
+      },
+      {
+        "source": "/internal/**",
+        "run": {
+          "serviceId": "__CLOUD_RUN_SERVICE_ID__",
+          "region": "__CLOUD_RUN_REGION__"
+        }
+      },
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "__CLOUD_RUN_SERVICE_ID__",
+          "region": "__CLOUD_RUN_REGION__"
+        }
+      }
+    ]
+  }
+}

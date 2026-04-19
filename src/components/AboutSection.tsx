@@ -1,73 +1,32 @@
 import FadeIn from "@/components/FadeIn";
+import { discoveryCallHref } from "@/lib/tracking";
 
 const AboutSection = () => {
   return (
-    <section id="contact" className="py-24 bg-white">
-      <div className="max-w-4xl mx-auto px-6">
+    <section id="contact" className="py-24 bg-charcoal text-white">
+      <div className="max-w-3xl mx-auto px-6 text-center">
         <FadeIn>
-          <h2 className="font-serif text-3xl md:text-5xl font-medium text-charcoal mb-8">
-            Let's work together.
+          <h2 className="font-serif text-3xl md:text-4xl font-medium mb-6">
+            Schedule a Discovery Call
           </h2>
         </FadeIn>
-
         <FadeIn delay={0.1}>
-          <div className="text-lg text-gray-600 leading-relaxed mb-12 max-w-3xl space-y-4">
-            <p>
-              I'm a technology leader with 15+ years building data products, AI systems, and engineering teams
-              for brands like Stellantis, Marriott, Samsung, and Southern Wine & Spirits.
-              Currently CIO at Anuba Technologies (edge AI for QSR) and independent technology consultant.
-            </p>
-            <p>
-              Previously Director of Data Architecture & Engineering at Razorfish (Publicis Groupe),
-              where I led data science and engineering teams across enterprise analytics, data architecture,
-              and product strategy for Fortune 500 clients.
-            </p>
-            <p>
-              I take on a limited number of engagements at a time — typically fractional CIO roles,
-              AI consulting projects, or focused technical builds. If you're building something ambitious
-              and need both strategic thinking and hands-on execution, let's talk.
-            </p>
-          </div>
+          <p className="text-gray-300 text-lg mb-10 leading-relaxed">
+            30 minutes. No pitch deck. Let's see if the fit is there.
+          </p>
         </FadeIn>
-
         <FadeIn delay={0.2}>
-          <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <a
-              href="https://calendly.com/jonathan-lynshue-anubatechnologies/30min"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-4 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors"
-            >
-              Schedule a Discovery Call
-            </a>
-            <a
-              href="mailto:hello@jonathanlynshue.com"
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-charcoal text-charcoal hover:bg-charcoal hover:text-white font-medium rounded-lg transition-colors"
-            >
-              hello@jonathanlynshue.com
-            </a>
-          </div>
+          <a
+            href={discoveryCallHref("contact-section")}
+            className="inline-flex items-center px-10 py-5 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
+          >
+            Schedule a Discovery Call
+          </a>
         </FadeIn>
-
         <FadeIn delay={0.3}>
-          <div className="flex gap-6 text-sm text-gray-400">
-            <a
-              href="https://linkedin.com/in/jonathanlynshue"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-charcoal transition-colors"
-            >
-              LinkedIn
-            </a>
-            <a
-              href="https://github.com/jlynshue"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-charcoal transition-colors"
-            >
-              GitHub
-            </a>
-          </div>
+          <p className="text-gray-500 text-sm mt-8">
+            Currently accepting new engagements for Q2 2026.
+          </p>
         </FadeIn>
       </div>
     </section>
