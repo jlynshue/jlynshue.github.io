@@ -26,9 +26,20 @@ function getHubSpotPropertyMap(payload: HubSpotUpsertTaskPayload): Record<string
   };
 }
 
+/**
+ * Client for sending events to the PostHog analytics API.
+ */
 export class PostHogApiClient {
+  /**
+   * @param {AppConfig} config - Application configuration containing posthogHost and posthogApiKey.
+   */
   constructor(private readonly config: AppConfig) {}
 
+  /**
+   * Captures a normalized event and sends it to PostHog.
+   * @param {NormalizedEvent} event - The event to capture.
+   * @returns {Promise<void>} Resolves when the event is accepted; throws on failure.
+   */
   async capture(event: NormalizedEvent): Promise<void> {
     if (!this.config.posthogHost || !this.config.posthogApiKey) {
       return;
@@ -76,9 +87,20 @@ export class PostHogApiClient {
   }
 }
 
+/**
+ * Client for interacting with the HubSpot CRM API (contacts and deals).
+ */
 export class HubSpotApiClient {
+  /**
+   * @param {AppConfig} config - Application configuration containing hubspotToken.
+   */
   constructor(private readonly config: AppConfig) {}
 
+  /**
+   * Creates or updates a HubSpot contact using the batch upsert endpoint.
+   * @param {HubSpotUpsertTaskPayload} payload - The contact data and attribution fields to upsert.
+   * @returns {Promise<string | null>} The HubSpot contact ID on success, or null if HubSpot is not configured.
+   */
   async upsertContact(payload: HubSpotUpsertTaskPayload): Promise<string | null> {
     if (!this.config.hubspotToken) {
       return null;
@@ -113,6 +135,11 @@ export class HubSpotApiClient {
     return data.results?.[0]?.id ?? null;
   }
 
+  /**
+   * Searches for HubSpot deals modified on or after the given timestamp.
+   * @param {string} since - ISO 8601 timestamp; only deals updated at or after this time are returned.
+   * @returns {Promise<HubSpotDealRecord[]>} An array of deal records, or an empty array if HubSpot is not configured.
+   */
   async searchDealsUpdatedSince(since: string): Promise<HubSpotDealRecord[]> {
     if (!this.config.hubspotToken) {
       return [];
@@ -163,6 +190,14 @@ export class HubSpotApiClient {
   }
 }
 
+/**
+ * Maps a HubSpot deal stage identifier to a corresponding event name using a lookup table.
+ * @param {string} stage - The HubSpot deal stage identifier.
+ * @param {Partial<Record<string, EventName>>} stageEventMap - A mapping from stage identifiers to event names.
+ * @returns {EventName | null} The matched event name, or null if the stage is not in the map.
+ * @example
+ * mapDealStageToEvent("closedwon", { closedwon: "deal_closed_won" }); // "deal_closed_won"
+ */
 export function mapDealStageToEvent(
   stage: string,
   stageEventMap: Partial<Record<string, EventName>>,
