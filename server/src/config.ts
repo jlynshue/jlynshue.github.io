@@ -18,9 +18,9 @@ function readOptional(name: string): string | null {
   return value ? value : null;
 }
 
-export function loadConfig(): AppConfig {
+export function buildConfig(): AppConfig {
   return {
-    nodeEnv: process.env.NODE_ENV ?? "development",
+    nodeEnv: process.env.NODE_ENV ?? "production",
     port: Number(process.env.PORT ?? "8080"),
     baseUrl: process.env.BASE_URL ?? "http://localhost:8080",
     staticDir: path.resolve(process.cwd(), process.env.STATIC_DIR ?? "dist"),
