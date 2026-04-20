@@ -657,7 +657,7 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
   async function handleRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
-    if (url.pathname === "/healthz") {
+    if (url.pathname === "/healthz" || url.pathname === "/health") {
       return jsonResponse({ status: "ok", service: "jonathanlynshue-site" });
     }
 
