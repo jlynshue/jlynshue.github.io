@@ -221,4 +221,177 @@ describe("server app", () => {
 
     expect(response.status).toBe(401);
   });
+
+  it("GET /health returns JSON status ok", async () => {
+    const app = createApp(buildConfig(staticDir), {
+      store: new MemoryTrackingStore(),
+      dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+      posthog: { capture: vi.fn().mockResolvedValue(undefined) },
+      hubspot: {
+        upsertContact: vi.fn().mockResolvedValue(null),
+        searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+      },
+      now: () => new Date("2026-04-19T12:00:00.000Z"),
+    });
+
+    const response = await app.handleRequest(
+      new Request("https://jonathanlynshue.com/health"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: "ok", service: "jonathanlynshue-site" });
+  });
+
+  it("GET /healthz returns JSON status ok", async () => {
+    const app = createApp(buildConfig(staticDir), {
+      store: new MemoryTrackingStore(),
+      dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+      posthog: { capture: vi.fn().mockResolvedValue(undefined) },
+      hubspot: {
+        upsertContact: vi.fn().mockResolvedValue(null),
+        searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+      },
+      now: () => new Date("2026-04-19T12:00:00.000Z"),
+    });
+
+    const response = await app.handleRequest(
+      new Request("https://jonathanlynshue.com/healthz"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: "ok", service: "jonathanlynshue-site" });
+  });
+
+  it("POST /webhooks/calcom with invalid signature returns 401", async () => {
+    const app = createApp(buildConfig(staticDir), {
+      store: new MemoryTrackingStore(),
+      dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+      posthog: { capture: vi.fn().mockResolvedValue(undefined) },
+      hubspot: {
+        upsertContact: vi.fn().mockResolvedValue(null),
+        searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+      },
+      now: () => new Date("2026-04-19T12:00:00.000Z"),
+    });
+
+    const body = JSON.stringify({ triggerEvent: "BOOKING_CREATED", payload: { uid: "test-123" } });
+    const response = await app.handleRequest(
+      new Request("https://jonathanlynshue.com/webhooks/calcom", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Cal-Signature-256": "invalid-signature",
+        },
+        body,
+      }),
+    );
+
+    expect(response.status).toBe(401);
+  });
+
+  it("POST /webhooks/calcom with valid signature returns 202", async () => {
+    const store = new MemoryTrackingStore();
+    const posthog = { capture: vi.fn().mockResolvedValue(undefined) };
+    const hubspot = {
+      upsertContact: vi.fn().mockResolvedValue("456"),
+      searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+    };
+    const app = createApp(buildConfig(staticDir), {
+      store,
+      dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+      posthog,
+      hubspot,
+      now: () => new Date("2026-04-19T12:00:00.000Z"),
+    });
+
+    const body = JSON.stringify({
+      triggerEvent: "BOOKING_CREATED",
+      createdAt: "2026-04-19T12:00:00.000Z",
+      payload: {
+        uid: "test-123",
+        attendees: [{ email: "attendee@example.com" }],
+      },
+    });
+    const signature = createHmac("sha256", "calcom-secret").update(body).digest("hex");
+
+    const response = await app.handleRequest(
+      new Request("https://jonathanlynshue.com/webhooks/calcom", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Cal-Signature-256": signature,
+        },
+        body,
+      }),
+    );
+
+    expect(response.status).toBe(202);
+  });
+
+  it("POST /internal/sync/hubspot with valid bearer token returns 200", async () => {
+    const app = createApp(buildConfig(staticDir), {
+      store: new MemoryTrackingStore(),
+      dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+      posthog: { capture: vi.fn().mockResolvedValue(undefined) },
+      hubspot: {
+        upsertContact: vi.fn().mockResolvedValue(null),
+        searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+      },
+      now: () => new Date("2026-04-19T12:00:00.000Z"),
+    });
+
+    const response = await app.handleRequest(
+      new Request("https://jonathanlynshue.com/internal/sync/hubspot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": "0",
+          Authorization: "Bearer internal-token",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json.ok).toBe(true);
+  });
+
+  it("unknown API routes return 404", async () => {
+    const app = createApp(buildConfig(staticDir), {
+      store: new MemoryTrackingStore(),
+      dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+      posthog: { capture: vi.fn().mockResolvedValue(undefined) },
+      hubspot: {
+        upsertContact: vi.fn().mockResolvedValue(null),
+        searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+      },
+      now: () => new Date("2026-04-19T12:00:00.000Z"),
+    });
+
+    const response = await app.handleRequest(
+      new Request("https://jonathanlynshue.com/api/nonexistent"),
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  it("serves static assets from the bundle directory", async () => {
+    const app = createApp(buildConfig(staticDir), {
+      store: new MemoryTrackingStore(),
+      dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+      posthog: { capture: vi.fn().mockResolvedValue(undefined) },
+      hubspot: {
+        upsertContact: vi.fn().mockResolvedValue(null),
+        searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+      },
+      now: () => new Date("2026-04-19T12:00:00.000Z"),
+    });
+
+    const response = await app.handleRequest(
+      new Request("https://jonathanlynshue.com/assets/app.js"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("console.log('ok')");
+  });
 });
