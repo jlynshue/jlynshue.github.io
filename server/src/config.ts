@@ -18,6 +18,8 @@ function readOptional(name: string): string | null {
   return value ? value : null;
 }
 
+export const loadConfig = buildConfig;
+
 export function buildConfig(): AppConfig {
   return {
     nodeEnv: process.env.NODE_ENV ?? "production",

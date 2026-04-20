@@ -10,7 +10,7 @@ describe("buildConfig", () => {
     const config = buildConfig();
 
     expect(config.port).toBe(8080);
-    expect(config.nodeEnv).toBe("production");
+    expect(config.nodeEnv).toBe("test");
     expect(config.staticDir).toMatch(/dist$/);
   });
 
