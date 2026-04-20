@@ -661,6 +661,31 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
       return jsonResponse({ status: "ok", service: "jonathanlynshue-site" });
     }
 
+    if (url.pathname === "/r/experiment-exposure") {
+      const experiment = url.searchParams.get("experiment");
+      const variation = url.searchParams.get("variation");
+      if (!experiment || !variation) {
+        return jsonError(400, "Missing experiment or variation param");
+      }
+
+      const cookies = parseCookies(request.headers.get("cookie"));
+      const distinctId = cookies.jls_aid ?? "anonymous";
+      const occurredAt = clock().toISOString();
+
+      const event = createEvent({
+        eventName: "experiment_exposed",
+        occurredAt,
+        path: url.pathname,
+        anonymousId: distinctId !== "anonymous" ? distinctId : null,
+        properties: { experiment, variation },
+      });
+
+      await dependencies.store.saveEvent(event);
+      await dependencies.posthog.capture(event);
+
+      return new Response(null, { status: 204 });
+    }
+
     if (url.pathname.startsWith("/r/")) {
       return handleTrackedRedirect(request, url);
     }

@@ -10,7 +10,8 @@ export type EventName =
   | "qualified_lead_marked"
   | "diagnostic_sold"
   | "sprint_sold"
-  | "retainer_started";
+  | "retainer_started"
+  | "experiment_exposed";
 
 export interface TouchPoint {
   path: string;
