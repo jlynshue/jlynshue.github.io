@@ -1,13 +1,19 @@
+import { useFeatureValue } from "@growthbook/growthbook-react";
 import FadeIn from "@/components/FadeIn";
 import { discoveryCallHref } from "@/lib/tracking";
 
 const HeroSection = () => {
+  const headline = useFeatureValue(
+    "hero_headline",
+    "Executive workflow systems that deliver clarity, not noise.",
+  );
+
   return (
     <section className="pt-32 pb-24 md:pt-40 md:pb-32 bg-white">
       <div className="max-w-4xl mx-auto px-6 text-center">
         <FadeIn>
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-medium text-charcoal leading-[1.1] tracking-tight mb-8">
-            Executive workflow systems that deliver clarity, not noise.
+            {headline}
           </h1>
         </FadeIn>
         <FadeIn delay={0.1}>
