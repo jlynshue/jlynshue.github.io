@@ -224,7 +224,6 @@ export function createEvent(params: {
   const occurredAt = params.occurredAt;
   const delivery: DeliveryStatus = {
     posthogStatus: "pending",
-    hubspotStatus: undefined,
     lastError: null,
     updatedAt: occurredAt,
   };
