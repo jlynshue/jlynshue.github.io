@@ -44,18 +44,45 @@ const CONTENT_TYPES: Record<string, string> = {
   ".webp": "image/webp",
 };
 
+/**
+ * Generates a new unique identifier using a random UUID.
+ * @returns {string} A random UUID string.
+ * @example
+ * const id = createId(); // "a1b2c3d4-e5f6-..."
+ */
 export function createId(): string {
   return randomUUID();
 }
 
+/**
+ * Returns the current (or provided) date as an ISO 8601 string.
+ * @param {Date} now - The date to format (defaults to current time).
+ * @returns {string} An ISO 8601 date string.
+ * @example
+ * nowIso(); // "2026-04-20T12:00:00.000Z"
+ */
 export function nowIso(now: Date = new Date()): string {
   return now.toISOString();
 }
 
+/**
+ * Extracts the pathname and query string from a URL.
+ * @param {URL} url - The URL to extract from.
+ * @returns {string} The pathname concatenated with the search/query string.
+ * @example
+ * getPathWithQuery(new URL("https://example.com/page?q=1")); // "/page?q=1"
+ */
 export function getPathWithQuery(url: URL): string {
   return `${url.pathname}${url.search}`;
 }
 
+/**
+ * Parses a Cookie header string into a key-value record.
+ * @param {string | null} header - The raw Cookie header value.
+ * @returns {Record<string, string>} A map of cookie names to decoded values.
+ * @example
+ * parseCookies("foo=bar; baz=qux"); // { foo: "bar", baz: "qux" }
+ */
 export function parseCookies(header: string | null): Record<string, string> {
   if (!header) {
     return {};
@@ -71,6 +98,15 @@ export function parseCookies(header: string | null): Record<string, string> {
   }, {});
 }
 
+/**
+ * Serializes a cookie name/value pair with options into a Set-Cookie header string.
+ * @param {string} name - The cookie name.
+ * @param {string} value - The cookie value.
+ * @param {object} options - Optional cookie attributes (maxAge, domain, httpOnly, sameSite, secure, path).
+ * @returns {string} A formatted Set-Cookie header string.
+ * @example
+ * serializeCookie("sid", "abc123", { maxAge: 3600 });
+ */
 export function serializeCookie(
   name: string,
   value: string,
@@ -101,6 +137,13 @@ export function serializeCookie(
   return parts.join("; ");
 }
 
+/**
+ * Builds a TouchPoint from the incoming request, URL, and timestamp.
+ * @param {Request} request - The incoming HTTP request (used for the referer header).
+ * @param {URL} url - The parsed request URL (used for path and UTM params).
+ * @param {string} occurredAt - ISO 8601 timestamp of when the touch occurred.
+ * @returns {TouchPoint} A populated touch point object.
+ */
 export function parseTouchFromRequest(request: Request, url: URL, occurredAt: string): TouchPoint {
   const referrerHeader = request.headers.get("referer");
   return {
@@ -114,6 +157,12 @@ export function parseTouchFromRequest(request: Request, url: URL, occurredAt: st
   };
 }
 
+/**
+ * Determines whether a touch point qualifies as an attribution touch (has UTM params or an external referrer).
+ * @param {TouchPoint} touch - The touch point to evaluate.
+ * @param {string} baseUrl - The site's base URL, used to distinguish internal vs external referrers.
+ * @returns {boolean} True if the touch carries attribution data.
+ */
 export function isAttributionTouch(touch: TouchPoint, baseUrl: string): boolean {
   if (touch.utmSource || touch.utmMedium || touch.utmCampaign || touch.utmContent) {
     return true;
@@ -132,6 +181,13 @@ export function isAttributionTouch(touch: TouchPoint, baseUrl: string): boolean 
   }
 }
 
+/**
+ * Resolves the session ID, creating a new session if none exists or the previous one has expired (30 min timeout).
+ * @param {TrackingProfile | null} existing - The existing tracking profile, if any.
+ * @param {string | null} cookieSessionId - The session ID from the cookie, if present.
+ * @param {Date} now - The current timestamp.
+ * @returns {{ sessionId: string; sessionStartedAt: string }} The resolved session ID and start time.
+ */
 export function resolveSessionId(
   existing: TrackingProfile | null,
   cookieSessionId: string | null,
@@ -152,12 +208,26 @@ export function resolveSessionId(
   };
 }
 
+/**
+ * Creates an HMAC-signed tracking token from a payload.
+ * @param {TrackingTokenPayload} payload - The data to encode in the token.
+ * @param {string} secret - The HMAC secret key.
+ * @returns {string} A base64url-encoded payload with an appended HMAC signature.
+ * @example
+ * createTrackingToken({ anonymousId: "abc", sessionId: "s1" }, "secret");
+ */
 export function createTrackingToken(payload: TrackingTokenPayload, secret: string): string {
   const encodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const signature = createHmac("sha256", secret).update(encodedPayload).digest("base64url");
   return `${encodedPayload}.${signature}`;
 }
 
+/**
+ * Verifies an HMAC-signed tracking token and returns the decoded payload if valid.
+ * @param {string} token - The signed token string (payload.signature).
+ * @param {string} secret - The HMAC secret key used to verify the signature.
+ * @returns {TrackingTokenPayload | null} The decoded payload, or null if verification fails.
+ */
 export function verifyTrackingToken(token: string, secret: string): TrackingTokenPayload | null {
   const [encodedPayload, signature] = token.split(".");
   if (!encodedPayload || !signature) {
@@ -181,6 +251,14 @@ export function verifyTrackingToken(token: string, secret: string): TrackingToke
   }
 }
 
+/**
+ * Verifies an HMAC signature over a raw request body using timing-safe comparison.
+ * @param {string} rawBody - The raw request body string.
+ * @param {string} secret - The HMAC secret key.
+ * @param {string | null} providedSignature - The signature provided by the caller.
+ * @param {"hex" | "base64"} format - The encoding format of the signature.
+ * @returns {boolean} True if the signature is valid.
+ */
 export function verifyRawBodySignature(
   rawBody: string,
   secret: string,
@@ -200,6 +278,11 @@ export function verifyRawBodySignature(
   return timingSafeEqual(expected, received);
 }
 
+/**
+ * Creates a fully populated NormalizedEvent with a unique ID and pending delivery status.
+ * @param {object} params - Event parameters including eventName, occurredAt, path, and optional attribution/contact fields.
+ * @returns {NormalizedEvent} A new normalized event ready for storage and delivery.
+ */
 export function createEvent(params: {
   eventName: EventName;
   occurredAt: string;
@@ -253,6 +336,12 @@ export function createEvent(params: {
   };
 }
 
+/**
+ * Clones a Headers object and appends one or more Set-Cookie values.
+ * @param {Headers} existing - The original response headers.
+ * @param {string[]} cookies - Serialized Set-Cookie strings to append.
+ * @returns {Headers} A new Headers instance with the cookies appended.
+ */
 export function mergeCookieHeaders(existing: Headers, cookies: string[]): Headers {
   const headers = new Headers(existing);
   for (const cookie of cookies) {
@@ -261,12 +350,26 @@ export function mergeCookieHeaders(existing: Headers, cookies: string[]): Header
   return headers;
 }
 
+/**
+ * Creates a JSON Response with the appropriate Content-Type header.
+ * @param {unknown} body - The value to JSON-serialize as the response body.
+ * @param {ResponseInit} init - Optional Response init options (status, headers, etc.).
+ * @returns {Response} A Response with a JSON body and Content-Type set.
+ * @example
+ * jsonResponse({ ok: true }, { status: 200 });
+ */
 export function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json; charset=utf-8");
   return new Response(JSON.stringify(body), { ...init, headers });
 }
 
+/**
+ * Determines whether a request is a browser HTML navigation (GET/HEAD for a non-static, non-API path accepting HTML).
+ * @param {Request} request - The incoming HTTP request.
+ * @param {URL} url - The parsed request URL.
+ * @returns {boolean} True if the request should be served the SPA HTML shell.
+ */
 export function isHtmlNavigationRequest(request: Request, url: URL): boolean {
   if (!["GET", "HEAD"].includes(request.method)) {
     return false;
@@ -282,6 +385,12 @@ export function isHtmlNavigationRequest(request: Request, url: URL): boolean {
   return accept.includes("text/html") || accept.includes("*/*");
 }
 
+/**
+ * Resolves a URL pathname to an absolute file path within the static directory, preventing path traversal.
+ * @param {string} staticDir - The root directory for static files.
+ * @param {string} pathname - The URL pathname to resolve.
+ * @returns {string | null} The resolved absolute file path, or null if it escapes the static root.
+ */
 export function resolveStaticFilePath(staticDir: string, pathname: string): string | null {
   const normalizedPath = pathname === "/" ? "/index.html" : pathname;
   const resolvedPath = path.resolve(staticDir, `.${normalizedPath}`);
@@ -292,6 +401,13 @@ export function resolveStaticFilePath(staticDir: string, pathname: string): stri
   return resolvedPath;
 }
 
+/**
+ * Attempts to serve a static file from disk, returning a Response with appropriate headers or null if not found.
+ * @param {string} staticDir - The root directory for static files.
+ * @param {string} pathname - The URL pathname of the requested file.
+ * @param {string} method - The HTTP method (GET or HEAD).
+ * @returns {Promise<Response | null>} A Response with the file contents, or null if the file doesn't exist.
+ */
 export async function serveStaticFile(
   staticDir: string,
   pathname: string,
@@ -321,10 +437,20 @@ export async function serveStaticFile(
   }
 }
 
+/**
+ * Reads the full request body as a UTF-8 string.
+ * @param {Request} request - The incoming HTTP request.
+ * @returns {Promise<string>} The raw body text.
+ */
 export async function readRawBody(request: Request): Promise<string> {
   return request.text();
 }
 
+/**
+ * Extracts a Bearer token from the Authorization header.
+ * @param {Request} request - The incoming HTTP request.
+ * @returns {string | null} The token string, or null if not present or malformed.
+ */
 export function extractBearerToken(request: Request): string | null {
   const authHeader = request.headers.get("authorization");
   if (!authHeader) {
@@ -337,6 +463,11 @@ export function extractBearerToken(request: Request): string | null {
   return token;
 }
 
+/**
+ * Extracts the jls_tracking token from a Cal.com webhook payload, checking responses, customInputs, and metadata.
+ * @param {Record<string, any>} payload - The Cal.com webhook payload.
+ * @returns {string | null} The tracking token, or null if not found.
+ */
 export function extractCalcomToken(payload: Record<string, any>): string | null {
   const nestedPayload = payload.payload ?? payload;
   const responseValue = nestedPayload.responses?.jls_tracking?.value;
@@ -354,6 +485,11 @@ export function extractCalcomToken(payload: Record<string, any>): string | null 
   return null;
 }
 
+/**
+ * Extracts the attendee email from a Cal.com webhook payload.
+ * @param {Record<string, any>} payload - The Cal.com webhook payload.
+ * @returns {string | null} The lowercase email, or null if not found.
+ */
 export function extractCalcomEmail(payload: Record<string, any>): string | null {
   const nestedPayload = payload.payload ?? payload;
   const attendee = nestedPayload.attendees?.[0];
@@ -367,6 +503,12 @@ export function extractCalcomEmail(payload: Record<string, any>): string | null 
   return null;
 }
 
+/**
+ * Extracts a field value by label from a Tally form webhook payload.
+ * @param {Record<string, any>} payload - The Tally webhook payload.
+ * @param {string} label - The field label to search for (case-insensitive).
+ * @returns {string | null} The field value, or null if not found.
+ */
 export function extractTallyFieldValue(
   payload: Record<string, any>,
   label: string,
@@ -387,6 +529,11 @@ export function extractTallyFieldValue(
   return null;
 }
 
+/**
+ * Extracts the email address from a Tally form webhook payload (by type INPUT_EMAIL or label "email").
+ * @param {Record<string, any>} payload - The Tally webhook payload.
+ * @returns {string | null} The lowercase email, or null if not found.
+ */
 export function extractTallyEmail(payload: Record<string, any>): string | null {
   const fields = payload.data?.fields;
   if (!Array.isArray(fields)) {
@@ -404,6 +551,14 @@ export function extractTallyEmail(payload: Record<string, any>): string | null {
   return null;
 }
 
+/**
+ * Appends tracking parameters (token, UTM values, and extras) to a destination URL.
+ * @param {URL} destination - The URL to append parameters to (mutated in place).
+ * @param {string} trackingToken - The signed tracking token value.
+ * @param {TouchPoint} touch - The touch point containing UTM parameters.
+ * @param {Record<string, string | null>} extras - Additional key-value pairs to append (nulls are skipped).
+ * @returns {URL} The mutated destination URL with parameters appended.
+ */
 export function appendTrackingParameters(
   destination: URL,
   trackingToken: string,
