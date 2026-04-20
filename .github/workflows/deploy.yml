@@ -84,11 +84,15 @@ jobs:
             POSTHOG_HOST=${{ secrets.POSTHOG_HOST }}
             POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}
             HUBSPOT_TOKEN=${{ secrets.HUBSPOT_TOKEN }}
-            HUBSPOT_STAGE_EVENT_MAP_JSON=${{ secrets.HUBSPOT_STAGE_EVENT_MAP_JSON }}
             FIRESTORE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
             CLOUD_TASKS_PROJECT=${{ secrets.GCP_PROJECT_ID }}
             CLOUD_TASKS_LOCATION=${{ secrets.GCP_REGION }}
             CLOUD_TASKS_QUEUE=${{ secrets.CLOUD_TASKS_QUEUE }}
+          secrets: |
+            HUBSPOT_STAGE_EVENT_MAP_JSON=HUBSPOT_STAGE_EVENT_MAP_JSON:latest
+
+      - name: Build web assets
+        run: npm run build
 
       - name: Install Firebase CLI
         run: npm install --global firebase-tools
@@ -103,7 +107,7 @@ jobs:
         run: firebase hosting:channel:deploy pr-${{ github.event.pull_request.number }} --project ${{ secrets.FIREBASE_PROJECT_ID }} --config firebase.generated.json --expires 7d
 
   production:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: verify
     runs-on: ubuntu-latest
     steps:
@@ -148,11 +152,17 @@ jobs:
             POSTHOG_HOST=${{ secrets.POSTHOG_HOST }}
             POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}
             HUBSPOT_TOKEN=${{ secrets.HUBSPOT_TOKEN }}
-            HUBSPOT_STAGE_EVENT_MAP_JSON=${{ secrets.HUBSPOT_STAGE_EVENT_MAP_JSON }}
             FIRESTORE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
             CLOUD_TASKS_PROJECT=${{ secrets.GCP_PROJECT_ID }}
             CLOUD_TASKS_LOCATION=${{ secrets.GCP_REGION }}
             CLOUD_TASKS_QUEUE=${{ secrets.CLOUD_TASKS_QUEUE }}
+            SERVICE_URL=https://jonathanlynshue-site-backend-584948595436.us-central1.run.app
+            USE_MEMORY_STORE=false
+          secrets: |
+            HUBSPOT_STAGE_EVENT_MAP_JSON=HUBSPOT_STAGE_EVENT_MAP_JSON:latest
+
+      - name: Build web assets
+        run: npm run build
 
       - name: Install Firebase CLI
         run: npm install --global firebase-tools
