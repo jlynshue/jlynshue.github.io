@@ -1,6 +1,6 @@
 ---
-date: 2026-04-18
-agent: cline
+date: 2026-04-20
+agent: goose
 category: execution-tickets
 ---
 
@@ -26,6 +26,12 @@ All project decisions with context, alternatives, and rationale.
 | 14 | 2026-04-19 | Move website hosting and analytics off GitHub Pages/Plausible onto Firebase Hosting + Cloud Run + PostHog | Need first-party server-side tracking, webhook ingestion, and same-domain attribution | Keep GitHub Pages, keep Plausible, add more frontend tags | Backend redirects, webhooks, and CRM attribution require a real server surface; same-domain cookies matter more than script simplicity | Supersedes website measurement portion of decision #3; adds Firebase, Cloud Run, Firestore, Cloud Tasks, PostHog | Jon + Codex |
 | 15 | 2026-04-19 | UI Automation MCP assessment is P0 priority | Multiple tickets blocked by "needs manual browser work" | Continue with manual work, hire VA, skip UI-dependent tasks | If the right UI automation tool is identified, every remaining manual ticket (HubSpot, LinkedIn, Firebase console, Cal.com, Tally) becomes automatable by the AI agent | Unblocks EWB-003, 007, 013; new ticket EWB-015 created | Jon |
 | 16 | 2026-04-19 | Create 3 new tickets for migration aftermath | Codex session delivered Firebase/Cloud Run branch with 10 remaining manual steps | Absorb into existing tickets, ignore migration | Clean ticket tracking: EWB-013 (infrastructure), EWB-014 (merge PR), EWB-015 (UI automation). Affected tickets noted in README | 3 new backlog tickets; 5 existing tickets flagged for update | Cline + Jon |
+| 17 | 2026-04-20 | Workload Identity Federation (not service account key) for CI/CD | GH Actions needs GCP auth for deploy | Store service account JSON key as GitHub secret | Keyless auth is more secure; no stored credentials to rotate; Google's recommended approach | No secret rotation burden; uses OIDC token exchange | Goose |
+| 18 | 2026-04-20 | Add `/health` alias alongside `/healthz` | Cloud Run LB reserves `/healthz` at infrastructure level, returns Google 404 | Change all references to `/health`, remove `/healthz` entirely | Keeping both is backward-compatible; `/health` works through Cloud Run LB; `/healthz` still works direct-to-container | Zero-downtime fix; no client changes needed | Goose |
+| 19 | 2026-04-20 | Move `HUBSPOT_STAGE_EVENT_MAP_JSON` to GCP Secret Manager | JSON commas broke `deploy-cloudrun` action's `^,^`-delimited `env_vars` parser | Escape commas, base64-encode the value, split into multiple env vars | Secret Manager is the intended mechanism for complex values in Cloud Run; cleaner and more secure | Decouples JSON config from CI pipeline parsing | Goose |
+| 20 | 2026-04-20 | Force-push feature branch as new `main` | Original PR merge via GitHub API only carried 2 files to main (PR diff, not full tree) | Cherry-pick missing files, create new PR with full content | Feature branch had the complete 172-file project; force-push is cleanest single-step fix | All files correct on main; CI/CD immediately functional | Goose + Jon |
+| 21 | 2026-04-20 | Use REST APIs over browser automation where available | EWB-013 R9 (Cal.com) and R10 (Tally) could use UI or API | Browser automation via Playwright/Kapture for all vendor tasks | APIs are faster, more reliable, repeatable, and version-controllable. Hierarchy: CLI > API > Playwright > Kapture > Manual | Cal.com webhook + Tally form created in <5 min via API vs. ~30 min via browser | Goose |
+| 22 | 2026-04-20 | Store vendor API keys in macOS Keychain | Cal.com and Tally API keys needed for CLI automation | Store in .env.master, store in GitHub secrets, paste inline | Keychain prevents leakage into shell history, env files, or git; retrievable via `security find-generic-password` | Keys never appear in plaintext outside Keychain | Jon + Goose |
 
 ## How to Use This Log
 
