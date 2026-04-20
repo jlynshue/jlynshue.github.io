@@ -356,6 +356,53 @@ describe("server app", () => {
     expect(json.ok).toBe(true);
   });
 
+  it("GET /r/experiment-exposure with valid params returns 204 and creates event", async () => {
+    const store = new MemoryTrackingStore();
+    const posthog = { capture: vi.fn().mockResolvedValue(undefined) };
+    const hubspot = {
+      upsertContact: vi.fn().mockResolvedValue(null),
+      searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+    };
+    const app = createApp(buildConfig(staticDir), {
+      store,
+      dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+      posthog,
+      hubspot,
+      now: () => new Date("2026-04-19T12:00:00.000Z"),
+    });
+
+    const response = await app.handleRequest(
+      new Request("https://jonathanlynshue.com/r/experiment-exposure?experiment=hero_headline&variation=1"),
+    );
+
+    expect(response.status).toBe(204);
+    expect(store.events.size).toBe(1);
+    expect(Array.from(store.events.values())[0]?.eventName).toBe("experiment_exposed");
+    expect(posthog.capture).toHaveBeenCalledTimes(1);
+  });
+
+  it("GET /r/experiment-exposure without params returns 400", async () => {
+    const store = new MemoryTrackingStore();
+    const posthog = { capture: vi.fn().mockResolvedValue(undefined) };
+    const hubspot = {
+      upsertContact: vi.fn().mockResolvedValue(null),
+      searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+    };
+    const app = createApp(buildConfig(staticDir), {
+      store,
+      dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+      posthog,
+      hubspot,
+      now: () => new Date("2026-04-19T12:00:00.000Z"),
+    });
+
+    const response = await app.handleRequest(
+      new Request("https://jonathanlynshue.com/r/experiment-exposure"),
+    );
+
+    expect(response.status).toBe(400);
+  });
+
   it("unknown API routes return 404", async () => {
     const app = createApp(buildConfig(staticDir), {
       store: new MemoryTrackingStore(),
