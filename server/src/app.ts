@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { CloudTaskDispatcher } from "./dispatcher.js";
+import { FirestoreTrackingStore } from "./repository.js";
 import {
   appendTrackingParameters,
   createEvent,
@@ -654,6 +655,196 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
     });
   }
 
+  // ── LinkedIn Publishing ──
+
+  async function linkedinApiFetch(path: string, options: RequestInit): Promise<Response> {
+    if (!config.linkedinAccessToken) {
+      throw new Error("LINKEDIN_ACCESS_TOKEN not configured");
+    }
+    const headers = new Headers(options.headers);
+    headers.set("Authorization", `Bearer ${config.linkedinAccessToken}`);
+    if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+    return fetch(`https://api.linkedin.com${path}`, { ...options, headers });
+  }
+
+  async function linkedinCreatePost(text: string, visibility: string): Promise<{ postUrn: string; activityUrn: string }> {
+    const personUrn = config.linkedinPersonUrn ?? "urn:li:person:mvKbumetTz";
+    const payload = {
+      author: personUrn,
+      commentary: text,
+      visibility,
+      distribution: { feedDistribution: "MAIN_FEED", targetEntities: [], thirdPartyDistributionChannels: [] },
+      lifecycleState: "PUBLISHED",
+    };
+    const res = await linkedinApiFetch("/rest/posts", {
+      method: "POST",
+      headers: { "LinkedIn-Version": "202601", "X-Restli-Protocol-Version": "2.0.0" },
+      body: JSON.stringify(payload),
+    });
+    if (res.status !== 201) {
+      const body = await res.text();
+      throw new Error(`LinkedIn post failed (${res.status}): ${body}`);
+    }
+    const postUrn = res.headers.get("x-restli-id") ?? "";
+    const activityUrn = postUrn.replace("urn:li:share:", "urn:li:activity:");
+    return { postUrn, activityUrn };
+  }
+
+  async function linkedinCreateComment(activityUrn: string, text: string): Promise<string> {
+    const personUrn = config.linkedinPersonUrn ?? "urn:li:person:mvKbumetTz";
+    const encodedUrn = encodeURIComponent(activityUrn);
+    const res = await linkedinApiFetch(`/v2/socialActions/${encodedUrn}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ actor: personUrn, message: { text } }),
+    });
+    if (res.status !== 201) {
+      const body = await res.text();
+      throw new Error(`LinkedIn comment failed (${res.status}): ${body}`);
+    }
+    const result = (await res.json()) as { id?: string };
+    return result.id ?? "unknown";
+  }
+
+  async function handleLinkedInPublish(request: Request): Promise<Response> {
+    if (request.method !== "POST") return jsonError(405, "Method not allowed");
+    const bearer = extractBearerToken(request);
+    if (bearer !== config.internalApiToken) return jsonError(401, "Unauthorized");
+    if (!config.linkedinAccessToken) return jsonError(503, "LINKEDIN_ACCESS_TOKEN not configured");
+
+    // Read all queued items from Firestore
+    const snapshot = await (dependencies.store as FirestoreTrackingStore).firestore
+      .collection("linkedin_queue")
+      .where("status", "==", "queued")
+      .where("scheduledAt", "<=", clock().toISOString())
+      .orderBy("scheduledAt", "asc")
+      .limit(5)
+      .get();
+
+    if (snapshot.empty) {
+      return jsonResponse({ ok: true, published: 0, message: "No queued posts ready" });
+    }
+
+    const results: Array<{ id: string; status: string; postUrn?: string; error?: string }> = [];
+
+    for (const doc of snapshot.docs) {
+      const item = doc.data() as import("./types.js").LinkedInQueueItem;
+      try {
+        // Create the post
+        const { postUrn, activityUrn } = await linkedinCreatePost(item.postText, item.visibility || "PUBLIC");
+
+        // Update the document with postUrn
+        await doc.ref.update({
+          status: "posted",
+          postUrn,
+          activityUrn,
+          updatedAt: clock().toISOString(),
+        });
+
+        // If there's a comment, dispatch it as a delayed Cloud Task (5 min)
+        if (item.commentText && dependencies.dispatcher.enabled) {
+          await dependencies.dispatcher.dispatch("/internal/linkedin/comment", {
+            queueItemId: doc.id,
+            activityUrn,
+            commentText: item.commentText,
+          });
+        } else if (item.commentText) {
+          // No Cloud Tasks available — comment immediately
+          const commentId = await linkedinCreateComment(activityUrn, item.commentText);
+          await doc.ref.update({ status: "commented", updatedAt: clock().toISOString() });
+          console.log(`[LinkedIn] Commented immediately: ${commentId}`);
+        }
+
+        results.push({ id: doc.id, status: "posted", postUrn });
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.error(`[LinkedIn] Failed to publish ${doc.id}:`, errorMsg);
+        await doc.ref.update({ status: "failed", error: errorMsg, updatedAt: clock().toISOString() });
+        results.push({ id: doc.id, status: "failed", error: errorMsg });
+      }
+    }
+
+    return jsonResponse({ ok: true, published: results.filter((r) => r.status === "posted").length, results });
+  }
+
+  async function handleLinkedInComment(request: Request): Promise<Response> {
+    if (request.method !== "POST") return jsonError(405, "Method not allowed");
+    const bearer = extractBearerToken(request);
+    if (bearer !== config.internalApiToken) return jsonError(401, "Unauthorized");
+    if (!config.linkedinAccessToken) return jsonError(503, "LINKEDIN_ACCESS_TOKEN not configured");
+
+    const raw = await readRawBody(request);
+    const payload = JSON.parse(raw) as { queueItemId: string; activityUrn: string; commentText: string };
+
+    try {
+      const commentId = await linkedinCreateComment(payload.activityUrn, payload.commentText);
+
+      // Update Firestore status
+      await (dependencies.store as FirestoreTrackingStore).firestore
+        .collection("linkedin_queue")
+        .doc(payload.queueItemId)
+        .update({ status: "commented", updatedAt: clock().toISOString() });
+
+      return jsonResponse({ ok: true, commentId });
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error(`[LinkedIn] Comment failed for ${payload.queueItemId}:`, errorMsg);
+
+      await (dependencies.store as FirestoreTrackingStore).firestore
+        .collection("linkedin_queue")
+        .doc(payload.queueItemId)
+        .update({ status: "failed", error: `Comment failed: ${errorMsg}`, updatedAt: clock().toISOString() });
+
+      return jsonError(500, errorMsg);
+    }
+  }
+
+  async function handleLinkedInQueue(request: Request): Promise<Response> {
+    if (request.method !== "POST") return jsonError(405, "Method not allowed");
+    const bearer = extractBearerToken(request);
+    if (bearer !== config.internalApiToken) return jsonError(401, "Unauthorized");
+
+    const raw = await readRawBody(request);
+    const body = JSON.parse(raw) as {
+      posts: Array<{
+        scheduledAt: string;
+        postText: string;
+        commentText?: string;
+        visibility?: string;
+      }>;
+    };
+
+    if (!body.posts || !Array.isArray(body.posts) || body.posts.length === 0) {
+      return jsonError(400, "Missing or empty posts array");
+    }
+
+    const store = (dependencies.store as FirestoreTrackingStore).firestore;
+    const batch = store.batch();
+    const ids: string[] = [];
+
+    for (const post of body.posts) {
+      const id = randomUUID();
+      const ref = store.collection("linkedin_queue").doc(id);
+      const item: import("./types.js").LinkedInQueueItem = {
+        id,
+        scheduledAt: post.scheduledAt,
+        postText: post.postText,
+        commentText: post.commentText ?? null,
+        visibility: post.visibility ?? "PUBLIC",
+        status: "queued",
+        postUrn: null,
+        activityUrn: null,
+        error: null,
+        createdAt: clock().toISOString(),
+        updatedAt: clock().toISOString(),
+      };
+      batch.set(ref, item);
+      ids.push(id);
+    }
+
+    await batch.commit();
+    return jsonResponse({ ok: true, queued: ids.length, ids }, { status: 201 });
+  }
+
   async function handleRequest(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
@@ -708,6 +899,18 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
 
     if (url.pathname === "/internal/sync/hubspot") {
       return handleHubSpotSync(request);
+    }
+
+    if (url.pathname === "/internal/linkedin/publish") {
+      return handleLinkedInPublish(request);
+    }
+
+    if (url.pathname === "/internal/linkedin/comment") {
+      return handleLinkedInComment(request);
+    }
+
+    if (url.pathname === "/internal/linkedin/queue") {
+      return handleLinkedInQueue(request);
     }
 
     const staticResponse = await serveStaticFile(config.staticDir, url.pathname, request.method);

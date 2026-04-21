@@ -1,0 +1,4 @@
+{
+  "text": "What buyers actually need from AI in operations: trust, not novelty.\n\nI keep hearing the same thing from CIOs and ops leaders:\n\n\u201cWe tried automating reporting. Nobody trusted the output.\u201d\n\nThe problem isn\u2019t the model. It\u2019s the design.\n\nIf the output isn\u2019t source-linked \u2014 if people can\u2019t trace\na number back to the ticket, the doc, or the meeting\nit came from \u2014 they won\u2019t trust it.\n\nThree things that make AI outputs trustworthy in operations:\n\n1. Source evidence attached to every claim\n2. Human review step before delivery\n3. Fallback path when the system isn\u2019t confident\n\nTrust is the wedge. Not novelty.\n\n#executiveworkflows #aiinoperations #trustworthyai",
+  "visibility": "PUBLIC"
+}

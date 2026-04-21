@@ -43,5 +43,7 @@ export function buildConfig(): AppConfig {
     cloudTasksProject: readOptional("CLOUD_TASKS_PROJECT"),
     cloudTasksLocation: readOptional("CLOUD_TASKS_LOCATION"),
     cloudTasksQueue: readOptional("CLOUD_TASKS_QUEUE"),
+    linkedinAccessToken: readOptional("LINKEDIN_ACCESS_TOKEN"),
+    linkedinPersonUrn: readOptional("LINKEDIN_PERSON_URN"),
   };
 }
