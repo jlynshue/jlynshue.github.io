@@ -1,6 +1,6 @@
 import { useFeatureValue } from "@growthbook/growthbook-react";
 import FadeIn from "@/components/FadeIn";
-import { discoveryCallHref } from "@/lib/tracking";
+import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
 
 const HeroSection = () => {
   const headline = useFeatureValue(
@@ -25,12 +25,14 @@ const HeroSection = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href={discoveryCallHref("hero")}
+              onClick={handleCTAClick("discovery_call", "hero")}
               className="inline-flex items-center px-8 py-4 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
             >
               Schedule a Discovery Call
             </a>
             <a
               href="/sprint"
+              onClick={handleCTAClick("sprint_page", "hero")}
               className="inline-flex items-center px-8 py-4 border border-gray-300 hover:border-gray-400 text-charcoal font-medium rounded-lg transition-colors text-lg"
             >
               See How The Sprint Works

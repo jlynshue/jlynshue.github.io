@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { Separator } from "@/components/ui/separator";
-import { discoveryCallHref } from "@/lib/tracking";
+import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
 
 const diagnosticDays = [
   {
@@ -183,6 +183,7 @@ const Diagnostic = () => {
             </p>
             <a
               href={discoveryCallHref("diagnostic-page")}
+              onClick={handleCTAClick("discovery_call", "diagnostic-page")}
               className="inline-flex items-center px-10 py-5 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
             >
               Schedule a Discovery Call

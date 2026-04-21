@@ -1,5 +1,5 @@
 import FadeIn from "@/components/FadeIn";
-import { discoveryCallHref } from "@/lib/tracking";
+import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
 
 const AboutSection = () => {
   return (
@@ -18,6 +18,7 @@ const AboutSection = () => {
         <FadeIn delay={0.2}>
           <a
             href={discoveryCallHref("contact-section")}
+            onClick={handleCTAClick("discovery_call", "contact-section")}
             className="inline-flex items-center px-10 py-5 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
           >
             Schedule a Discovery Call
