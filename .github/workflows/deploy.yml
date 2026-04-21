@@ -84,6 +84,8 @@ jobs:
             POSTHOG_HOST=${{ secrets.POSTHOG_HOST }}
             POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}
             HUBSPOT_TOKEN=${{ secrets.HUBSPOT_TOKEN }}
+            LINKEDIN_ACCESS_TOKEN=${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+            LINKEDIN_PERSON_URN=${{ secrets.LINKEDIN_PERSON_URN }}
             FIRESTORE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
             CLOUD_TASKS_PROJECT=${{ secrets.GCP_PROJECT_ID }}
             CLOUD_TASKS_LOCATION=${{ secrets.GCP_REGION }}
@@ -152,6 +154,8 @@ jobs:
             POSTHOG_HOST=${{ secrets.POSTHOG_HOST }}
             POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}
             HUBSPOT_TOKEN=${{ secrets.HUBSPOT_TOKEN }}
+            LINKEDIN_ACCESS_TOKEN=${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+            LINKEDIN_PERSON_URN=${{ secrets.LINKEDIN_PERSON_URN }}
             FIRESTORE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
             CLOUD_TASKS_PROJECT=${{ secrets.GCP_PROJECT_ID }}
             CLOUD_TASKS_LOCATION=${{ secrets.GCP_REGION }}

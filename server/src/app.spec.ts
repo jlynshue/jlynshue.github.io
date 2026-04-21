@@ -41,6 +41,8 @@ function buildConfig(staticDir: string): AppConfig {
     cloudTasksProject: null,
     cloudTasksLocation: null,
     cloudTasksQueue: null,
+    linkedinAccessToken: null,
+    linkedinPersonUrn: null,
   };
 }
 

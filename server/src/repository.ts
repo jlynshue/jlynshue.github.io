@@ -114,7 +114,7 @@ export class FirestoreTrackingStore implements TrackingStore {
   /**
    * @param {Firestore} firestore - The Firestore client instance.
    */
-  constructor(private readonly firestore: Firestore) {}
+  constructor(readonly firestore: Firestore) {}
 
   /**
    * Retrieves a tracking profile by anonymous ID from the "profiles" collection.
