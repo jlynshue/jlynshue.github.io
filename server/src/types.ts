@@ -131,6 +131,22 @@ export interface AppConfig {
   cloudTasksProject: string | null;
   cloudTasksLocation: string | null;
   cloudTasksQueue: string | null;
+  linkedinAccessToken: string | null;
+  linkedinPersonUrn: string | null;
+}
+
+export interface LinkedInQueueItem {
+  id: string;
+  scheduledAt: string;
+  postText: string;
+  commentText: string | null;
+  visibility: string;
+  status: "queued" | "posted" | "commented" | "failed";
+  postUrn: string | null;
+  activityUrn: string | null;
+  error: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TrackingStore {

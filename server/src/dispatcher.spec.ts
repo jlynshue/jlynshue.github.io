@@ -35,6 +35,8 @@ function buildConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     cloudTasksProject: "my-project",
     cloudTasksLocation: "us-central1",
     cloudTasksQueue: "my-queue",
+    linkedinAccessToken: null,
+    linkedinPersonUrn: null,
     ...overrides,
   };
 }
