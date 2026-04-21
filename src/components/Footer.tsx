@@ -1,4 +1,4 @@
-import { discoveryCallHref } from "@/lib/tracking";
+import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
 
 const Footer = () => {
   return (
@@ -23,6 +23,7 @@ const Footer = () => {
             </a>
             <a
               href={discoveryCallHref("footer")}
+              onClick={handleCTAClick("discovery_call", "footer")}
               className="hover:text-white transition-colors"
             >
               Book a Meeting
