@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { usePageTracking } from "@/hooks/usePageTracking";
-import { gb, GrowthBookProvider, initGrowthBook } from "@/lib/growthbook";
+import { gb, GrowthBookProvider, initGrowthBook, growthBookEnabled } from "@/lib/growthbook";
 import Index from "./pages/Index";
 import Sprint from "./pages/Sprint";
 import Diagnostic from "./pages/Diagnostic";
@@ -27,9 +27,16 @@ const AppRoutes = () => {
   );
 };
 
+const AppShell = ({ children }: { children: React.ReactNode }) => {
+  if (growthBookEnabled && gb) {
+    return <GrowthBookProvider growthbook={gb}>{children}</GrowthBookProvider>;
+  }
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <GrowthBookProvider growthbook={gb}>
+    <AppShell>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -37,7 +44,7 @@ const App = () => (
           <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
-    </GrowthBookProvider>
+    </AppShell>
   </QueryClientProvider>
 );
 
