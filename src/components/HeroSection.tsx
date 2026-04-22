@@ -1,19 +1,23 @@
 import { useFeatureValue } from "@growthbook/growthbook-react";
 import FadeIn from "@/components/FadeIn";
 import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
+import { growthBookEnabled } from "@/lib/growthbook";
+
+const DEFAULT_HEADLINE = "Executive workflow systems that deliver clarity, not noise.";
+
+/** Inner component that uses the GrowthBook hook (only rendered when GB is enabled). */
+const GBHeadline = () => {
+  const headline = useFeatureValue("hero_headline", DEFAULT_HEADLINE);
+  return <>{headline}</>;
+};
 
 const HeroSection = () => {
-  const headline = useFeatureValue(
-    "hero_headline",
-    "Executive workflow systems that deliver clarity, not noise.",
-  );
-
   return (
     <section className="pt-32 pb-24 md:pt-40 md:pb-32 bg-white">
       <div className="max-w-4xl mx-auto px-6 text-center">
         <FadeIn>
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-medium text-charcoal leading-[1.1] tracking-tight mb-8">
-            {headline}
+            {growthBookEnabled ? <GBHeadline /> : DEFAULT_HEADLINE}
           </h1>
         </FadeIn>
         <FadeIn delay={0.1}>
