@@ -690,9 +690,14 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
     return { postUrn, activityUrn };
   }
 
-  async function linkedinCreateComment(activityUrn: string, text: string): Promise<string> {
+  async function linkedinCreateComment(postOrActivityUrn: string, text: string): Promise<string> {
     const personUrn = config.linkedinPersonUrn ?? "urn:li:person:mvKbumetTz";
-    const encodedUrn = encodeURIComponent(activityUrn);
+    // Use the share URN directly — the activity URN derived via string replace
+    // has a different numeric ID and returns 404.
+    const urnForComment = postOrActivityUrn.startsWith("urn:li:share:")
+      ? postOrActivityUrn
+      : postOrActivityUrn;
+    const encodedUrn = encodeURIComponent(urnForComment);
     const res = await linkedinApiFetch(`/v2/socialActions/${encodedUrn}/comments`, {
       method: "POST",
       body: JSON.stringify({ actor: personUrn, message: { text } }),
@@ -744,12 +749,12 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
         if (item.commentText && dependencies.dispatcher.enabled) {
           await dependencies.dispatcher.dispatch("/internal/linkedin/comment", {
             queueItemId: doc.id,
-            activityUrn,
+            postUrn,
             commentText: item.commentText,
           });
         } else if (item.commentText) {
           // No Cloud Tasks available — comment immediately
-          const commentId = await linkedinCreateComment(activityUrn, item.commentText);
+          const commentId = await linkedinCreateComment(postUrn, item.commentText);
           await doc.ref.update({ status: "commented", updatedAt: clock().toISOString() });
           console.log(`[LinkedIn] Commented immediately: ${commentId}`);
         }
@@ -773,10 +778,13 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
     if (!config.linkedinAccessToken) return jsonError(503, "LINKEDIN_ACCESS_TOKEN not configured");
 
     const raw = await readRawBody(request);
-    const payload = JSON.parse(raw) as { queueItemId: string; activityUrn: string; commentText: string };
+    const payload = JSON.parse(raw) as { queueItemId: string; postUrn?: string; activityUrn?: string; commentText: string };
+
+    // Use postUrn (share URN) for commenting — activityUrn returns 404
+    const commentUrn = payload.postUrn ?? payload.activityUrn ?? "";
 
     try {
-      const commentId = await linkedinCreateComment(payload.activityUrn, payload.commentText);
+      const commentId = await linkedinCreateComment(commentUrn, payload.commentText);
 
       // Update Firestore status
       await (dependencies.store as FirestoreTrackingStore).firestore
