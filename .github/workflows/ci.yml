@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['20', '22']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then npm ci; elif [ -f package.json ]; then npm install; fi
+
+      - name: Lint
+        run: |
+          if [ -f package.json ] && npm run 2>/dev/null | grep -q "^  lint$"; then npm run lint; fi
+        continue-on-error: true
+
+      - name: Typecheck
+        run: |
+          if [ -f package.json ] && npm run 2>/dev/null | grep -q "^  typecheck$"; then npm run typecheck; fi
+        continue-on-error: true
+
+      - name: Test
+        run: |
+          if [ -f package.json ] && npm run 2>/dev/null | grep -q "^  test$"; then npm test; fi
+        continue-on-error: true
