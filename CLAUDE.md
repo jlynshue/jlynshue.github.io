@@ -1,110 +1,115 @@
-# Fusion Starter
+# CLAUDE.md
 
-The Fusion Starter is a modern, production-ready template for building full-stack React applications using react-router-dom in SPA mode.
+Guidance for Claude Code (claude.ai/code) working in this repository.
 
-## Core Framework & Technologies
+## What This Is
 
-- **React 18**
-- **React Router 6**: Powers the client-side routing
-- **TypeScript**: Type safety is built-in by default
-- **Vite**: Bundling and development server
-- **Vitest**: For testing
-- **TailwindCSS 3**: For styling
+**jonathanlynshue.com** — personal website **+ executive-workflow lead-generation
+platform** for Jonathan Lyn-Shue. A React SPA frontend with a Node.js backend that
+does server-side tracking, tracked CTA redirects, and webhook ingestion.
 
-## Routing System
+Production: https://jonathanlynshue.com · Remote: `github.com/jlynshue/jlynshue.github.io`
 
-The routing system is powered by React Router 7:
+## Tech Stack
 
-- `src/pages/Index.tsx` represents the home page.
-- Routes are defined in `src/App.tsx` using the `react-router-dom` import
-- Route files are located in the `src/pages/` directory
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui (Radix), `react-router-dom` (SPA) |
+| Backend | Node.js HTTP server (`server/src/app.ts`) |
+| Database | Firestore (native mode) |
+| Async | Cloud Tasks (`event-delivery` queue) |
+| Hosting | Firebase Hosting (CDN + custom domain) + Cloud Run (us-central1) |
+| CI/CD | GitHub Actions + Workload Identity Federation (keyless) |
+| Tracking | Server-side only — PostHog + HubSpot via Cloud Tasks |
+| Forms / Scheduling | Tally (webhook) · Cal.com (webhook) |
 
-For example, routes can be defined with:
+## Commands
 
-```typescript
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+```bash
+npm install
+npm run dev          # Vite dev server on :8080
+npm run build        # Client build (alias: build:client)
+npm run build:all    # Client + server (tsc -p tsconfig.server.json)
+npm start            # Run built server (server/dist/index.js)
+npm test             # Vitest (run mode) — ~62 tests
+npm run typecheck    # tsc for app, node, and server configs
+npm run format.fix   # Prettier --write .
+```
 
+> There is **no lint script** — Prettier handles formatting only.
+
+## Project Structure
+
+```
+src/                     # React frontend
+├── App.tsx              # Router: react-router-dom <Routes> (SPA)
+├── main.tsx             # Entry
+├── pages/               # Index, HowIWork, Sprint, Diagnostic, NotFound
+├── components/          # Section components + components/ui/ (shadcn primitives)
+├── hooks/  lib/  types/ # Hooks, utils (cn in lib/utils.ts), shared types
+server/src/              # Node.js backend
+├── app.ts               # HTTP server + routes
+├── config.ts            # Env/config loading
+├── repository.ts        # Firestore access (events, profiles, contacts)
+├── dispatcher.ts        # Cloud Tasks event delivery
+├── vendors.ts           # PostHog / HubSpot clients
+├── utils.ts  types.ts
+└── *.spec.ts            # Vitest tests colocated with sources
+public/                  # Static assets (favicon, robots.txt, logos)
+docs/                    # ARCHITECTURE, API-REFERENCE, deployment, strategy
+.github/workflows/       # deploy.yml — verify + (preview|production)
+firebase.template.json   # Hosting config w/ Cloud Run rewrites (rendered at deploy)
+Dockerfile               # Multi-stage Node 20 build
+```
+
+## Routing
+
+Routes are defined in `src/App.tsx` with `react-router-dom`:
+
+```tsx
 <Routes>
   <Route path="/" element={<Index />} />
-  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+  <Route path="/sprint" element={<Sprint />} />
+  <Route path="/diagnostic" element={<Diagnostic />} />
+  <Route path="/how-i-work" element={<HowIWork />} />
+  {/* Keep custom routes ABOVE the catch-all */}
   <Route path="*" element={<NotFound />} />
-</Routes>;
+</Routes>
 ```
 
-## Styling System
+Page components live in `src/pages/`. Styling uses Tailwind (tokens in
+`tailwind.config.ts`), shadcn/ui components in `src/components/ui/`, and the `cn`
+helper from `@/lib/utils` (clsx + tailwind-merge).
 
-The styling system combines several technologies:
+## Server Routes
 
-- **TailwindCSS 3**: Used as the primary styling method with utility classes
-- **tailwind.config.ts**: Used to describe the design system tokens, update this file to change the whole look and feel
-- **CSS Imports**: Base styles are imported in `src/index.css`
-- **UI Component Library**: A comprehensive set of pre-styled UI components in `src/components/ui/` built with:
-  - Radix UI: For accessible UI primitives
-  - Class Variance Authority: For component variants
-  - TailwindCSS: For styling
-  - Lucide React: For icons
-  - Lots of utility components, like carousels, calendar, alerts...
-- **Class Name Utility**: The codebase includes a `cn` utility function from `@/lib/utils` that combines the functionality of `clsx` and `tailwind-merge`. Here's how it's typically used:
+Full contract in **`docs/API-REFERENCE.md`**. Summary:
 
-  ```typescript
-  // A complex example showing the power of the cn utility
-  function CustomComponent(props) {
-    return (
-      <div
-        className={cn(
-          // Base styles always applied
-          "flex items-center rounded-md transition-all duration-200",
+| Route | Method | Auth | Purpose |
+|-------|--------|------|---------|
+| `/health`, `/healthz` | GET | none | Health check |
+| `/r/discovery-call`, `/r/lead-magnet` | GET | none | Tracked redirects (Cal.com / Tally) |
+| `/webhooks/calcom`, `/webhooks/tally` | POST | HMAC-SHA256 | Vendor events |
+| `/internal/tasks/*`, `/internal/sync/hubspot` | POST | Bearer | Cloud Tasks delivery / sync |
+| `/*` | GET | none | SPA fallback (serves `index.html` with tracking cookies) |
 
-          // Object syntax for conditional classes - keys are class names, values are boolean expressions
-          {
-            // Size-based classes
-            "text-xs p-1.5 gap-1": props.size === "sm",
-            "text-base p-3.5 gap-3": props.size === "lg",
+## Architecture & Deployment
 
-            // Width control
-            "w-full": isFullWidth,
-            "w-auto": !isFullWidth,
-          },
+- **Architecture** (system diagram, request flows, design decisions): `docs/ARCHITECTURE.md`.
+- **Deploy:** push to `main` → GitHub Actions `verify` (`test` + `typecheck` +
+  `build:all`) → `production` (deploy Cloud Run `jonathanlynshue-site-backend` +
+  Firebase Hosting). PRs get preview Cloud Run services + Firebase preview channels
+  (7-day expiry). Auth via Workload Identity Federation (no stored keys).
+- **Multi-environment plan** (dev/uat/prod target state): see the vault project
+  folder `10.00-Projects/10.11-jonathanlynshue.com/`.
 
-          // Error state overrides other states
-          props.hasError && "border-red-500 text-red-700 bg-red-50",
+## Key Conventions
 
-          // User-provided className comes last for highest precedence
-          props.className
-        )}
-      />
-    );
-  }
-  ```
-
-The styling system supports dark mode through CSS variables and media queries.
-
-## Testing
-
-- **Unit Testing Utilities**: Utility functions such as `cn` in `src/lib/utils.ts` are covered by dedicated unit tests in `src/lib/utils.spec.ts`.
-- **Testing Framework**: Tests are written using [Vitest](https://vitest.dev/), which provides a Jest-like API and fast performance for Vite projects.
-- **Adding More Tests**: Place new utility tests in the same directory as the utility, using the `.spec.ts` suffix.
-
-## Development Workflow
-
-- **Development**: `npm run dev` - Starts the development server with HMR
-- **Production Build**: `npm run build` - Creates optimized production build
-- **Type Checking**: `npm run typecheck` - Validates TypeScript types
-- **Run tests**: `npm test` - Run all .spec tests
-
-## Architecture Overview
-
-The architecture follows a modern React application structure:
-
-```
-package.json
-app/
-├── components/     # Reusable UI components
-│   └── ui/         # Core UI component library
-├── routes/         # Route components and logic
-├── app.css         # Global styles
-├── root.tsx        # Root layout and error boundary
-└── routes.ts       # Route configuration
-```
-
-This structure provides a clean separation of concerns between UI components, routes, and application logic.
+1. **Server-side tracking only** — no client analytics scripts. First-party cookies
+   (`jls_aid`, `jls_sid`) + server events to Firestore, delivered async to
+   PostHog/HubSpot via Cloud Tasks. Never block page responses on vendor APIs.
+2. **Tests colocated** as `*.spec.ts` (Vitest). Set `USE_MEMORY_STORE=true` to run
+   the server without real Firestore.
+3. **Secrets** live in `.env` (local) / GitHub Actions secrets / GCP Secret Manager.
+   `.env.example` is the template — **never commit real values**.
+4. **TypeScript** strict; run `npm run typecheck` before pushing (CI gates on it).
