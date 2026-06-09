@@ -7,7 +7,9 @@ import { usePageTracking } from "@/hooks/usePageTracking";
 import Index from "./pages/Index";
 import Sprint from "./pages/Sprint";
 import Diagnostic from "./pages/Diagnostic";
+import HowIWork from "./pages/HowIWork";
 import NotFound from "./pages/NotFound";
+import Redesign from "./pages/Redesign";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +21,8 @@ const AppRoutes = () => {
       <Route path="/" element={<Index />} />
       <Route path="/sprint" element={<Sprint />} />
       <Route path="/diagnostic" element={<Diagnostic />} />
+      <Route path="/how-i-work" element={<HowIWork />} />
+      <Route path="/redesign" element={<Redesign />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
