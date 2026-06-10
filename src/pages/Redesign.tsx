@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { initWallpaper } from "./wallpaper";
+import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
 import "./Redesign.css";
 
 const Redesign = () => {
@@ -26,7 +27,12 @@ const Redesign = () => {
           <a href="#approach">Approach</a>
           <a href="#contact">Contact</a>
         </nav>
-        <a className="btn signal" style={{ padding: "8px 14px", fontSize: 12 }}>
+        <a
+          href={discoveryCallHref("redesign-topbar")}
+          onClick={handleCTAClick("discovery_call", "redesign-topbar")}
+          className="btn signal"
+          style={{ padding: "8px 14px", fontSize: 12 }}
+        >
           Book a sprint <span className="arr">→</span>
         </a>
       </div>
@@ -260,7 +266,7 @@ const Redesign = () => {
             </p>
             <div className="ck-foot">
               <span>2020 — 2022</span>
-              <span>Read →</span>
+              <a href="https://linkedin.com/in/jonathanlynshue" target="_blank" rel="noopener noreferrer">Read →</a>
             </div>
           </div>
           <div className="card">
@@ -272,7 +278,7 @@ const Redesign = () => {
             </p>
             <div className="ck-foot">
               <span>2024 — present</span>
-              <span>Read →</span>
+              <a href="https://linkedin.com/in/jonathanlynshue" target="_blank" rel="noopener noreferrer">Read →</a>
             </div>
           </div>
           <div className="card">
@@ -284,7 +290,7 @@ const Redesign = () => {
             </p>
             <div className="ck-foot">
               <span>2022 — 2024</span>
-              <span>Read →</span>
+              <a href="https://linkedin.com/in/jonathanlynshue" target="_blank" rel="noopener noreferrer">Read →</a>
             </div>
           </div>
         </div>
@@ -415,7 +421,12 @@ const Redesign = () => {
           Book a 30-minute diagnostic call. No pitch deck — just the one
           workflow that's costing you the most executive hours per month.
         </p>
-        <a className="btn signal" style={{ fontSize: 16, padding: "14px 28px" }}>
+        <a
+          href={discoveryCallHref("redesign-contact")}
+          onClick={handleCTAClick("discovery_call", "redesign-contact")}
+          className="btn signal"
+          style={{ fontSize: 16, padding: "14px 28px" }}
+        >
           Book a discovery call <span className="arr">→</span>
         </a>
       </div>
@@ -448,14 +459,14 @@ const Redesign = () => {
             <br />
             Fractional CIO/CTO · JL—S Consulting
             <br />
-            Miami, FL · 305 · 484 · 9168
+            Miami, FL · <a href="tel:+13054849168">305 · 484 · 9168</a>
             <br />
-            jonathan.lynshue@gmail.com
+            <a href="mailto:jonathan.lynshue@gmail.com">jonathan.lynshue@gmail.com</a>
           </div>
           <div className="vers">
             jonathanlynshue.com
             <br />
-            /in/jonathanlynshue
+            <a href="https://linkedin.com/in/jonathanlynshue" target="_blank" rel="noopener noreferrer">/in/jonathanlynshue</a>
             <br />
             <br />
             <span style={{ color: "var(--signal)" }}>●</span> available
