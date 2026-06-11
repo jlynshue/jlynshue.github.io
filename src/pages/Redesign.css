@@ -7,22 +7,16 @@
   pointer-events: none; z-index: 0; display: block;
 }
 .brand.wp .topbar {
-  background: rgba(11,14,20,0.85);
+  background: rgba(244,241,234,0.66);
   -webkit-backdrop-filter: blur(9px) saturate(118%);
   backdrop-filter: blur(9px) saturate(118%);
   z-index: 50; position: relative;
-  border-bottom-color: var(--line-ink);
 }
-.brand.wp .topbar .top-nav a { color: var(--mist); }
-.brand.wp .topbar .top-nav a:hover { color: var(--paper); }
-.brand.wp .topbar .top-mark { color: var(--paper); }
 .brand.wp .section {
-  background: rgba(11,14,20,0.78);
+  background: rgba(244,241,234,0.70);
   -webkit-backdrop-filter: blur(9px) saturate(118%);
   backdrop-filter: blur(9px) saturate(118%);
   position: relative; z-index: 1;
-  color: var(--paper);
-  border-top-color: var(--line-ink);
 }
 .brand.wp .section.dark {
   background: transparent;
@@ -50,18 +44,6 @@
   backdrop-filter: none;
   position: relative; z-index: 1;
 }
-.brand.wp .section .sec-title { color: var(--paper); }
-.brand.wp .section .sec-lede { color: var(--mist); }
-.brand.wp .section .sec-num { color: var(--mist); }
-.brand.wp .section .strat-block h3 { color: var(--mist); }
-.brand.wp .section .strat-block p { color: var(--paper); }
-.brand.wp .section .strat-block li { color: var(--paper); }
-.brand.wp .section .pull { color: var(--paper); }
-.brand.wp .section .card { background: rgba(22,26,34,0.9); border-color: var(--line-ink); }
-.brand.wp .section .card h4 { color: var(--paper); }
-.brand.wp .section .card p { color: var(--mist); }
-.brand.wp .section .card .ck-foot { color: var(--mist); border-top-color: var(--line-ink); }
-.brand.wp .section .pitch-card { background: rgba(37,73,245,0.12); border: 1px solid var(--signal); }
 
 .brand {
   --ink: #0B0E14;
