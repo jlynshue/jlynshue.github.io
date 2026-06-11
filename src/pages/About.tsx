@@ -1,19 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
+import { trackAboutVariant } from "@/lib/analytics";
+import { useSectionTracking } from "@/hooks/useSectionTracking";
 import BrandTopbar from "@/components/BrandTopbar";
 import BrandFooter from "@/components/BrandFooter";
 import SearchOverlay from "@/components/SearchOverlay";
 import "./Redesign.css";
 import "./About.css";
 
+const ABOUT_SECTIONS = [
+  { id: "about-case", title: "Proof / Case Teaser", index: 0 },
+  { id: "about-services", title: "Service Pillars", index: 1 },
+  { id: "about-bio", title: "Background", index: 2 },
+  { id: "about-process", title: "Engagement Process", index: 3 },
+  { id: "about-cta", title: "Final CTA", index: 4 },
+];
+
 const About = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const variant = useFeatureFlag<"hybrid" | "services-led">("about-layout", "hybrid");
+  useSectionTracking(ABOUT_SECTIONS);
+
+  useEffect(() => {
+    trackAboutVariant(variant);
+    fetch(`/r/experiment-exposure?experiment=about-layout&variation=${variant}`).catch(() => {});
+  }, [variant]);
 
   /* ─── A. Anchor Case Teaser ─── */
   const caseTeaser = (
-    <section className="section dark" key="case">
+    <section className="section dark" key="case" data-section-id="about-case">
       <div className="wrap">
         <div className="sec-head">
           <div className="sec-num">00 / Proof</div>
@@ -69,7 +85,7 @@ const About = () => {
 
   /* ─── B. Service Pillars ─── */
   const servicePillars = (
-    <section className="section" key="services">
+    <section className="section" key="services" data-section-id="about-services">
       <div className="wrap">
         <div className="sec-head">
           <div className="sec-num">01 / Services</div>
@@ -129,7 +145,7 @@ const About = () => {
 
   /* ─── C. Personal Narrative ─── */
   const personalNarrative = (
-    <section className="section" key="bio">
+    <section className="section" key="bio" data-section-id="about-bio">
       <div className="wrap">
         <div className="sec-head">
           <div className="sec-num">02 / Background</div>
@@ -196,7 +212,7 @@ const About = () => {
 
   /* ─── D. Engagement Process ─── */
   const engagementProcess = (
-    <section className="section" key="process">
+    <section className="section" key="process" data-section-id="about-process">
       <div className="wrap">
         <div className="sec-head">
           <div className="sec-num">03 / Process</div>
@@ -265,7 +281,7 @@ const About = () => {
 
   /* ─── E. CTA Section ─── */
   const ctaSection = (
-    <section className="section dark" key="cta">
+    <section className="section dark" key="cta" data-section-id="about-cta">
       <div className="wrap" style={{ textAlign: "center", maxWidth: 720 }}>
         <div style={{ marginBottom: "var(--s-6)" }}>
           <span className="pill signal">

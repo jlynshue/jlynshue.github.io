@@ -4,10 +4,21 @@ import ProjectsSection from "@/components/ProjectsSection";
 import BrandTopbar from "@/components/BrandTopbar";
 import BrandFooter from "@/components/BrandFooter";
 import SearchOverlay from "@/components/SearchOverlay";
+import { useSectionTracking } from "@/hooks/useSectionTracking";
 import "./Redesign.css";
+
+const HOME_SECTIONS = [
+  { id: "hero", title: "Hero", index: 0 },
+  { id: "strategy", title: "Strategy Brief", index: 1 },
+  { id: "work", title: "Case Studies", index: 2 },
+  { id: "projects", title: "Projects", index: 3 },
+  { id: "approach", title: "Approach", index: 4 },
+  { id: "contact", title: "CTA / Contact", index: 5 },
+];
 
 const Redesign = () => {
   const [searchOpen, setSearchOpen] = useState(false);
+  useSectionTracking(HOME_SECTIONS);
 
   return (
   <>
@@ -15,7 +26,7 @@ const Redesign = () => {
     <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
     {/* HERO */}
-    <header className="hero">
+    <header className="hero" data-section-id="hero">
       <div className="wrap">
         <div className="hero-eyebrow">
           <span className="dot" />
@@ -75,7 +86,7 @@ const Redesign = () => {
     </header>
 
     {/* STRATEGY */}
-    <section className="section" id="strategy">
+    <section className="section" id="strategy" data-section-id="strategy">
       <div className="wrap">
         <div className="sec-head">
           <div className="sec-num">00 / Strategy</div>
@@ -211,7 +222,7 @@ const Redesign = () => {
     </section>
 
     {/* WORK / CASE STUDIES */}
-    <section className="section dark" id="work">
+    <section className="section dark" id="work" data-section-id="work">
       <div className="wrap">
         <div className="sec-head">
           <div className="sec-num">01 / Work</div>
@@ -277,7 +288,7 @@ const Redesign = () => {
     <ProjectsSection />
 
     {/* APPROACH */}
-    <section className="section" id="approach">
+    <section className="section" id="approach" data-section-id="approach">
       <div className="wrap">
         <div className="sec-head">
           <div className="sec-num">03 / Approach</div>
@@ -365,7 +376,7 @@ const Redesign = () => {
     </section>
 
     {/* CTA / CONTACT */}
-    <section className="section dark" id="contact">
+    <section className="section dark" id="contact" data-section-id="contact">
       <div className="wrap" style={{ textAlign: "center" as const, maxWidth: 720 }}>
         <div style={{ marginBottom: "var(--s-6)" }}>
           <span className="pill signal" style={{ borderColor: "var(--signal)", color: "var(--signal)" }}>

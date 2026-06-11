@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { trackSearchOpen, trackSearchQuery, trackSearchResultClick } from "@/lib/analytics";
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -60,17 +61,28 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     setSel(0);
   }, [query]);
 
-  // Focus input when opening
+  // Focus input when opening + track
   useEffect(() => {
     if (isOpen) {
       setQuery("");
       setSel(0);
+      trackSearchOpen("click");
       setTimeout(() => inputRef.current?.focus(), 20);
     }
   }, [isOpen]);
 
+  // Debounced search query tracking
+  useEffect(() => {
+    if (!query.trim()) return;
+    const timer = setTimeout(() => {
+      trackSearchQuery(query, results.length);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [query, results.length]);
+
   const go = useCallback(
     (item: IndexItem) => {
+      trackSearchResultClick(query, item.title, item.href);
       onClose();
       if (item.href.startsWith("mailto:") || item.href.startsWith("http")) {
         window.open(item.href, "_blank", "noopener");
@@ -78,7 +90,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         navigate(item.href);
       }
     },
-    [navigate, onClose]
+    [navigate, onClose, query]
   );
 
   // Keyboard navigation
