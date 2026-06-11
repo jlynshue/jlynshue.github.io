@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import BrandTopbar from "@/components/BrandTopbar";
 import SearchOverlay from "@/components/SearchOverlay";
+import { trackChatStarted, trackChatMessage } from "@/lib/analytics";
 import "./Redesign.css";
 import "./Chat.css";
 
@@ -84,6 +85,11 @@ export default function Chat() {
 
   async function ask(question: string) {
     if (!question.trim() || busy) return;
+
+    const userMessages = history.filter((m) => m.role === "user");
+    const isFirst = userMessages.length === 0;
+    if (isFirst) trackChatStarted();
+    trackChatMessage(question.trim().length, isFirst, userMessages.length + 1);
 
     const userMsg: Message = { role: "user", content: question.trim() };
     setHistory((h) => [...h, userMsg]);

@@ -104,4 +104,74 @@ export function trackEngagementTierView(tierName: string, priceRange: string) {
   });
 }
 
+/** Track search overlay interactions */
+export function trackSearchOpen(trigger: "keyboard" | "click") {
+  trackEvent("search_opened", { trigger, page_path: window.location.pathname });
+}
+
+export function trackSearchQuery(query: string, resultCount: number) {
+  trackEvent("search_query", {
+    query: query.slice(0, 100),
+    result_count: resultCount,
+    page_path: window.location.pathname,
+  });
+}
+
+export function trackSearchResultClick(
+  query: string,
+  resultTitle: string,
+  resultPath: string,
+) {
+  trackEvent("search_result_click", {
+    query,
+    result_title: resultTitle,
+    result_path: resultPath,
+  });
+}
+
+/** Track chat interactions */
+export function trackChatStarted() {
+  trackEvent("chat_started", { page_path: window.location.pathname });
+}
+
+export function trackChatMessage(
+  messageLength: number,
+  isFirst: boolean,
+  sessionCount: number,
+) {
+  trackEvent("chat_message_sent", {
+    message_length: messageLength,
+    is_first: isFirst,
+    session_message_count: sessionCount,
+  });
+}
+
+/** Track navigation */
+export function trackNavClick(fromPage: string, toPage: string) {
+  trackEvent("nav_click", { from_page: fromPage, to_page: toPage });
+}
+
+/** Track external link clicks */
+export function trackExternalLink(url: string, text: string) {
+  trackEvent("external_link_click", {
+    url,
+    text: text.slice(0, 100),
+    page_path: window.location.pathname,
+  });
+}
+
+/** Track lab card clicks */
+export function trackLabCardClick(
+  cardType: "app" | "repo",
+  cardTitle: string,
+  url: string,
+) {
+  trackEvent("lab_card_click", { card_type: cardType, card_title: cardTitle, url });
+}
+
+/** Track About page A/B variant */
+export function trackAboutVariant(variant: string) {
+  trackEvent("about_variant_loaded", { variant });
+}
+
 export { GA_ID };

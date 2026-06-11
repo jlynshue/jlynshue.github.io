@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
 import { initWallpaper } from "../pages/wallpaper";
+import { useExternalLinkTracking } from "@/hooks/useExternalLinkTracking";
 
 export default function WallpaperLayout() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  useExternalLinkTracking();
 
   useEffect(() => {
     if (!canvasRef.current) return;

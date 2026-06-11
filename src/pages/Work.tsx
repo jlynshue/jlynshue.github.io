@@ -4,9 +4,20 @@ import "./Work.css";
 import BrandTopbar from "@/components/BrandTopbar";
 import BrandFooter from "@/components/BrandFooter";
 import SearchOverlay from "@/components/SearchOverlay";
+import { useSectionTracking } from "@/hooks/useSectionTracking";
+
+const WORK_SECTIONS = [
+  { id: "case-head", title: "Case Header", index: 0 },
+  { id: "stat-band", title: "Stat Band", index: 1 },
+  { id: "context", title: "Context", index: 2 },
+  { id: "approach", title: "Approach", index: 3 },
+  { id: "results", title: "Results", index: 4 },
+  { id: "cta", title: "CTA", index: 5 },
+];
 
 export default function Work() {
   const [searchOpen, setSearchOpen] = useState(false);
+  useSectionTracking(WORK_SECTIONS);
 
   return (
     <div>
@@ -18,7 +29,7 @@ export default function Work() {
       />
 
       {/* ===== CASE HEADER ===== */}
-      <header className="section case-head">
+      <header className="section case-head" data-section-id="case-head">
         <div className="wrap">
           <div className="case-head-eyebrow">
             <span className="pill">
@@ -68,7 +79,7 @@ export default function Work() {
       </header>
 
       {/* ===== STAT BAND ===== */}
-      <section className="section dark stat-band">
+      <section className="section dark stat-band" data-section-id="stat-band">
         <div className="wrap">
           <div className="stat-grid">
             <div className="stat-cell">
@@ -101,7 +112,7 @@ export default function Work() {
       </section>
 
       {/* ===== 01 / CONTEXT ===== */}
-      <section className="section" id="context">
+      <section className="section" id="context" data-section-id="context">
         <div className="wrap">
           <div className="sec-head">
             <div className="sec-num">01 / Context</div>
@@ -195,7 +206,7 @@ export default function Work() {
       </section>
 
       {/* ===== 02 / APPROACH ===== */}
-      <section className="section" id="approach">
+      <section className="section" id="approach" data-section-id="approach">
         <div className="wrap">
           <div className="sec-head">
             <div className="sec-num">02 / Approach</div>
@@ -358,7 +369,7 @@ export default function Work() {
       </section>
 
       {/* ===== 03 / RESULTS ===== */}
-      <section className="section" id="results">
+      <section className="section" id="results" data-section-id="results">
         <div className="wrap">
           <div className="sec-head">
             <div className="sec-num">03 / Results</div>
@@ -435,7 +446,7 @@ export default function Work() {
       </section>
 
       {/* ===== CTA ===== */}
-      <section className="section dark" id="cta">
+      <section className="section dark" id="cta" data-section-id="cta">
         <div
           className="wrap"
           style={{ textAlign: "center", maxWidth: 720 }}
