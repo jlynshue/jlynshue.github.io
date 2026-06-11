@@ -1,44 +1,18 @@
-import { useEffect, useRef } from "react";
-import { initWallpaper } from "./wallpaper";
+import { useState } from "react";
 import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
 import ProjectsSection from "@/components/ProjectsSection";
+import BrandTopbar from "@/components/BrandTopbar";
+import BrandFooter from "@/components/BrandFooter";
+import SearchOverlay from "@/components/SearchOverlay";
 import "./Redesign.css";
 
 const Redesign = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    return initWallpaper(canvas);
-  }, []);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-  <div className="brand wp">
-    <canvas ref={canvasRef} className="wp-bg" />
-    {/* TOPBAR */}
-    <div className="topbar">
-      <div className="topbar-inner">
-        <div className="top-mark">
-          JL<span className="dash">—</span>S
-        </div>
-        <nav className="top-nav">
-          <a href="#strategy">Strategy</a>
-          <a href="#work">Work</a>
-          <a href="#projects">Projects</a>
-          <a href="#approach">Approach</a>
-          <a href="#contact">Contact</a>
-        </nav>
-        <a
-          href={discoveryCallHref("redesign-topbar")}
-          onClick={handleCTAClick("discovery_call", "redesign-topbar")}
-          className="btn signal"
-          style={{ padding: "8px 14px", fontSize: 12 }}
-        >
-          Book a sprint <span className="arr">→</span>
-        </a>
-      </div>
-    </div>
+  <>
+    <BrandTopbar variant="dark" activePage="index" onSearchOpen={() => setSearchOpen(true)} />
+    <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
     {/* HERO */}
     <header className="hero">
@@ -437,49 +411,8 @@ const Redesign = () => {
       </div>
     </section>
 
-    {/* FOOTER */}
-    <footer className="footer">
-      <div className="wrap">
-        <div className="footer-grid">
-          <div>
-            <div
-              className="eyebrow"
-              style={{ color: "var(--mist)", marginBottom: "var(--s-4)" }}
-            >
-              JL—S Consulting
-            </div>
-            <h3>
-              One workflow.
-              <br />
-              <em>Ten business days.</em>
-              <span className="dash">—</span>
-            </h3>
-          </div>
-          <div className="meta">
-            <strong style={{ color: "var(--paper)" }}>
-              Jonathan Lyn-Shue
-            </strong>
-            <br />
-            CIO &amp; Co-Founder, Anuba Technologies
-            <br />
-            Fractional CIO/CTO · JL—S Consulting
-            <br />
-            Miami, FL · <a href="tel:+13054849168">305 · 484 · 9168</a>
-            <br />
-            <a href="mailto:jonathan.lynshue@gmail.com">jonathan.lynshue@gmail.com</a>
-          </div>
-          <div className="vers">
-            jonathanlynshue.com
-            <br />
-            <a href="https://linkedin.com/in/jonathanlynshue" target="_blank" rel="noopener noreferrer">/in/jonathanlynshue</a>
-            <br />
-            <br />
-            <span style={{ color: "var(--signal)" }}>●</span> available
-          </div>
-        </div>
-      </div>
-    </footer>
-  </div>
+    <BrandFooter />
+  </>
   );
 };
 
