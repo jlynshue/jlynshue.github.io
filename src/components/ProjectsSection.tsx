@@ -44,7 +44,7 @@ const projects = [
 ];
 
 const ProjectsSection = () => (
-  <section className="section" id="projects">
+  <section className="section" id="projects" data-section-id="projects">
     <div className="wrap">
       <div className="sec-head">
         <div className="sec-num">02 / Projects</div>
