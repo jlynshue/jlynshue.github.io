@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { initWallpaper } from "./wallpaper";
 import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
+import ProjectsSection from "@/components/ProjectsSection";
 import "./Redesign.css";
 
 const Redesign = () => {
@@ -24,6 +25,7 @@ const Redesign = () => {
         <nav className="top-nav">
           <a href="#strategy">Strategy</a>
           <a href="#work">Work</a>
+          <a href="#projects">Projects</a>
           <a href="#approach">Approach</a>
           <a href="#contact">Contact</a>
         </nav>
@@ -297,11 +299,14 @@ const Redesign = () => {
       </div>
     </section>
 
+    {/* PROJECTS */}
+    <ProjectsSection />
+
     {/* APPROACH */}
     <section className="section" id="approach">
       <div className="wrap">
         <div className="sec-head">
-          <div className="sec-num">02 / Approach</div>
+          <div className="sec-num">03 / Approach</div>
           <div>
             <h2 className="sec-title">
               One workflow. <em>Ten business days.</em>

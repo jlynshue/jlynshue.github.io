@@ -17,10 +17,10 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<Redesign />} />
+      <Route path="/v1" element={<Index />} />
       <Route path="/sprint" element={<Sprint />} />
       <Route path="/diagnostic" element={<Diagnostic />} />
-      <Route path="/redesign" element={<Redesign />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
