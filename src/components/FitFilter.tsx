@@ -1,7 +1,8 @@
 import { CheckCircle, XCircle } from "lucide-react";
 import FadeIn from "@/components/FadeIn";
+import { useHeroPositioning } from "@/hooks/useFeatureFlag";
 
-const goodFit = [
+const workflowGoodFit = [
   "Ops-heavy teams with recurring reporting or coordination pain",
   "50–2,000 employee organizations or similarly complex environments",
   "Multiple systems already in place (M365, Jira, Confluence, Slack/Teams)",
@@ -9,7 +10,7 @@ const goodFit = [
   "No appetite for a long transformation program — want results in days, not months",
 ];
 
-const notFit = [
+const workflowNotFit = [
   "Generic app builds or custom product development",
   "Vague AI strategy without a specific workflow problem",
   "Low-cost automation or basic chatbot projects",
@@ -17,7 +18,27 @@ const notFit = [
   "Organization-wide transformation before proving value on one workflow",
 ];
 
+const fractionalGoodFit = [
+  "Growth-stage companies ($10M–$100M) needing technology leadership",
+  "CEOs making technology decisions without a dedicated tech executive",
+  "Companies with data scattered across 4+ tools and no unified view",
+  "Teams that need enterprise-grade architecture at startup speed",
+  "PE/VC portfolio companies needing fractional tech leadership across investments",
+];
+
+const fractionalNotFit = [
+  "Early-stage startups needing a hands-on coder (hire an engineer)",
+  "Companies looking for a figurehead CTO who just shows up to board meetings",
+  "Organizations wanting a 6-month 'discovery phase' before action",
+  "Engagements under $10K/month (can't deliver meaningful executive impact)",
+  "Teams that need someone 5 days/week in-office (I embed 2-3 days, remote-flexible)",
+];
+
 const FitFilter = () => {
+  const positioning = useHeroPositioning();
+  const goodFit = positioning === "fractional" ? fractionalGoodFit : workflowGoodFit;
+  const notFit = positioning === "fractional" ? fractionalNotFit : workflowNotFit;
+
   return (
     <section className="py-24 bg-white">
       <div className="max-w-5xl mx-auto px-6">
