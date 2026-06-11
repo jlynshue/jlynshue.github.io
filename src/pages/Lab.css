@@ -1,0 +1,165 @@
+/* Lab page — apps + open-source grid */
+
+/* App grid */
+.brand .app-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-5);
+}
+@media (max-width: 900px) {
+  .brand .app-grid { grid-template-columns: 1fr; }
+}
+
+.brand .app-card {
+  background: var(--ink);
+  color: var(--paper);
+  padding: var(--s-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-height: 320px;
+  border-radius: var(--radius);
+}
+.brand .app-card h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1.05;
+  margin: var(--s-4) 0 0;
+}
+.brand .app-card p {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--mist);
+  margin: 0;
+  flex: 1;
+}
+.brand .app-card .app-foot {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--mist);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line-ink);
+  margin-top: auto;
+}
+
+/* Signal-blue variant */
+.brand .app-card.signal-card {
+  background: var(--signal);
+}
+.brand .app-card.signal-card p {
+  color: rgba(244,241,234,.8);
+}
+.brand .app-card.signal-card .app-foot {
+  color: rgba(244,241,234,.7);
+  border-top-color: rgba(244,241,234,.2);
+}
+.brand .app-card.signal-card .pill {
+  border-color: var(--paper);
+  color: var(--paper);
+}
+
+/* Repo grid */
+.brand .repo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  .brand .repo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .brand .repo-grid { grid-template-columns: 1fr; }
+}
+
+.brand .repo {
+  background: var(--paper);
+  padding: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  transition: background .15s ease;
+}
+.brand .repo:hover {
+  background: var(--paper-2);
+}
+
+.brand .repo .name {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: var(--ink);
+}
+.brand .repo .desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--steel);
+  margin: 0;
+  flex: 1;
+}
+.brand .repo .foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+  color: var(--steel);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+}
+.brand .repo .foot .lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.brand .repo .foot .lang .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--steel);
+}
+.brand .repo .foot .lang.py .dot { background: var(--signal); }
+.brand .repo .foot .lang.ts .dot { background: var(--signal-2); }
+.brand .repo .foot .lang.sql .dot { background: var(--heat); }
+.brand .repo .foot .lang.sh .dot { background: var(--steel); }
+.brand .repo .foot .lang.md .dot { background: var(--mist); }
+
+.brand .repo .foot .stars::before {
+  content: "\2605 ";
+}
+.brand .repo .foot .badge {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+
+/* GitHub CTA box */
+.brand .gh-cta {
+  margin-top: var(--s-7);
+  padding: var(--s-6);
+  border: 2px dashed var(--line);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-5);
+  flex-wrap: wrap;
+}
+.brand .gh-cta p {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--steel);
+  margin: 0;
+  max-width: 50ch;
+}

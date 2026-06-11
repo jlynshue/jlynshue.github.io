@@ -1,37 +1,38 @@
-import { useHeroPositioning } from "@/hooks/useFeatureFlag";
 import FadeIn from "@/components/FadeIn";
-import HeroFractional from "@/components/HeroFractional";
 import { discoveryCallHref, handleCTAClick } from "@/lib/tracking";
 
-const HeroWorkflow = () => {
+const HeroFractional = () => {
   return (
     <section className="pt-32 pb-24 md:pt-40 md:pb-32 bg-white">
       <div className="max-w-4xl mx-auto px-6 text-center">
         <FadeIn>
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-medium text-charcoal leading-[1.1] tracking-tight mb-8">
-            Executive workflow systems that deliver clarity, not noise.
+            Fractional CIO/CTO for companies scaling through their next revenue
+            milestone.
           </h1>
         </FadeIn>
         <FadeIn delay={0.1}>
           <p className="text-xl md:text-2xl text-gray-500 mb-12 font-light max-w-3xl mx-auto">
-            One bottleneck. Ten business days. Built inside your existing stack.
+            Enterprise data strategy, AI infrastructure, and technology
+            leadership for growth-stage companies — at a fraction of the
+            full-time cost.
           </p>
         </FadeIn>
         <FadeIn delay={0.2}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href={discoveryCallHref("hero")}
-              onClick={handleCTAClick("discovery_call", "hero")}
+              href={discoveryCallHref("hero-fractional")}
+              onClick={handleCTAClick("discovery_call", "hero-fractional")}
               className="inline-flex items-center px-8 py-4 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
             >
               Schedule a Discovery Call
             </a>
             <a
-              href="/sprint"
-              onClick={handleCTAClick("sprint_page", "hero")}
+              href="/how-i-work"
+              onClick={handleCTAClick("how_i_work", "hero-fractional")}
               className="inline-flex items-center px-8 py-4 border border-gray-300 hover:border-gray-400 text-charcoal font-medium rounded-lg transition-colors text-lg"
             >
-              See How The Sprint Works
+              See How I Work →
             </a>
           </div>
         </FadeIn>
@@ -40,22 +41,4 @@ const HeroWorkflow = () => {
   );
 };
 
-/**
- * Hero section with A/B test support.
- *
- * Variant A (control): "Executive workflow systems" — existing messaging
- * Variant B: "Fractional CIO/CTO" — new positioning
- *
- * Test with: ?variant=fractional or ?variant=workflow in URL
- */
-const HeroSection = () => {
-  const positioning = useHeroPositioning();
-
-  if (positioning === "fractional") {
-    return <HeroFractional />;
-  }
-
-  return <HeroWorkflow />;
-};
-
-export default HeroSection;
+export default HeroFractional;

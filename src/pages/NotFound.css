@@ -1,0 +1,218 @@
+/* 404 — Lost the signal */
+
+.nf-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  color: var(--paper);
+  position: relative;
+}
+
+/* ---- Main grid ---- */
+
+.nf {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  align-items: center;
+  flex: 1;
+  gap: var(--s-8);
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--s-7) var(--s-6);
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Left column ---- */
+
+.nf-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.nf-code {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--heat);
+  letter-spacing: 0.02em;
+}
+
+.nf-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--heat);
+  animation: nf-pulse 2s ease-in-out infinite;
+}
+
+@keyframes nf-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.nf h1 {
+  font-family: var(--serif);
+  font-size: clamp(64px, 10vw, 150px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--paper);
+}
+
+.nf h1 em {
+  font-style: italic;
+}
+
+.nf-dash {
+  color: var(--signal);
+}
+
+.nf-sub {
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--mist);
+  max-width: 480px;
+  margin: 0;
+}
+
+.nf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+}
+
+.nf-btn {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  border: none;
+}
+
+.nf-btn-primary {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.nf-btn-primary:hover {
+  background: var(--paper-2);
+}
+
+.nf-btn-secondary {
+  background: rgba(244, 241, 234, 0.08);
+  color: var(--paper);
+  border: 1px solid var(--line-ink);
+}
+
+.nf-btn-secondary:hover {
+  background: rgba(244, 241, 234, 0.14);
+}
+
+/* ---- Right column — incident card ---- */
+
+.nf-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.incident-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--steel);
+  padding: 0 var(--s-2);
+}
+
+.incident {
+  background: var(--ink-2);
+  border: 1px solid var(--line-ink);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  overflow: hidden;
+}
+
+.incident-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px dashed var(--line-ink);
+}
+
+.incident-row-last {
+  border-bottom: none;
+}
+
+.incident-key {
+  color: var(--steel);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.incident-val {
+  color: var(--paper);
+  word-break: break-all;
+}
+
+.incident-heat {
+  color: var(--heat);
+}
+
+.incident-verdict {
+  color: #6E8BFF;
+}
+
+/* ---- Footer ---- */
+
+.nf-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--s-4) var(--s-6);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--steel);
+  letter-spacing: 0.02em;
+  border-top: 1px solid var(--line-ink);
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 900px) {
+  .nf {
+    grid-template-columns: 1fr;
+    gap: var(--s-6);
+    padding: var(--s-6) var(--s-4);
+  }
+
+  .nf h1 {
+    font-size: clamp(48px, 12vw, 96px);
+  }
+
+  .nf-foot {
+    flex-direction: column;
+    gap: var(--s-2);
+    text-align: center;
+    padding: var(--s-4);
+  }
+}

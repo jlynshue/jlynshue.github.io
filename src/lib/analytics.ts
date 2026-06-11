@@ -83,4 +83,25 @@ export function initScrollDepthTracking() {
   return () => window.removeEventListener("scroll", handleScroll);
 }
 
+/** Track fractional positioning interactions */
+export function trackFractionalEvent(
+  action: string,
+  label?: string,
+  variant?: string,
+) {
+  trackEvent("fractional_interaction", {
+    action,
+    label: label ?? "",
+    variant: variant ?? "fractional",
+  });
+}
+
+/** Track engagement tier views on How I Work page */
+export function trackEngagementTierView(tierName: string, priceRange: string) {
+  trackEvent("engagement_tier_view", {
+    tier_name: tierName,
+    price_range: priceRange,
+  });
+}
+
 export { GA_ID };

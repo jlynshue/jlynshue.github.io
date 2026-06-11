@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useHeroPositioning } from "@/hooks/useFeatureFlag";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const positioning = useHeroPositioning();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -24,12 +26,21 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
-  const navItems = [
+  const workflowNavItems = [
     { label: "Services", action: () => scrollToSection("services") },
     { label: "Work", action: () => scrollToSection("work") },
     { label: "Approach", action: () => scrollToSection("approach") },
     { label: "Contact", action: () => scrollToSection("contact") },
   ];
+
+  const fractionalNavItems = [
+    { label: "How I Work", action: () => (window.location.href = "/how-i-work") },
+    { label: "Results", action: () => scrollToSection("work") },
+    { label: "About", action: () => scrollToSection("contact") },
+    { label: "Schedule a Call", action: () => (window.location.href = "/r/discovery-call?placement=nav") },
+  ];
+
+  const navItems = positioning === "fractional" ? fractionalNavItems : workflowNavItems;
 
   return (
     <header
