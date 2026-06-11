@@ -1,6 +1,45 @@
 # jonathanlynshue.com
 
-Personal website and executive workflow business platform for Jonathan Lyn-Shue.
+[![Deploy Firebase Hosting + Cloud Run](https://github.com/jlynshue/jlynshue.github.io/actions/workflows/deploy.yml/badge.svg)](https://github.com/jlynshue/jlynshue.github.io/actions/workflows/deploy.yml)
+
+**Live:** [jonathanlynshue.com](https://jonathanlynshue.com)
+
+Full-stack personal brand platform with server-side event tracking, webhook ingestion, and CRM automation. Built as a production-grade SPA backed by a Cloud Run API that handles first-party analytics, Cal.com/Tally webhook processing, and HubSpot deal pipeline sync.
+
+## Architecture
+
+```
+Browser ─┬─► Firebase Hosting (React SPA, CDN-cached)
+         │
+         └─► Cloud Run API (Node.js, us-central1)
+                 ├── /r/*            Tracked redirects (first-party cookies)
+                 ├── /webhooks/*     HMAC-validated inbound (Cal.com, Tally)
+                 ├── /internal/*     Cloud Tasks delivery endpoints
+                 │
+                 ├──► Firestore      Event store + contact records
+                 ├──► Cloud Tasks    Async fan-out (event-delivery queue)
+                 ├──► PostHog        Server-side analytics delivery
+                 └──► HubSpot        Contact + deal pipeline sync
+```
+
+## Key Engineering Decisions
+
+- **Cloud Run over Vercel/Netlify** — Server-side tracking requires long-lived HTTP handlers for webhook ingestion, HMAC validation, and durable queue dispatch. Cloud Run gives full control over request lifecycle with zero cold-start penalty at the traffic profile this site sees.
+
+- **Firestore over PostgreSQL** — Event-sourced design (every page view, redirect, form submission stored as an immutable document). Serverless scale from zero, no connection pooling, no migrations, and Cloud Tasks delivery is idempotent with document-level transactions.
+
+- **Custom first-party tracking over GA4** — Full data ownership with server-side event collection. No ad blockers strip the signal, no third-party cookies, and the same event stream feeds both PostHog (product analytics) and HubSpot (CRM attribution) via Cloud Tasks fan-out.
+
+- **HMAC-SHA256 webhook validation** — Cal.com booking events and Tally form submissions are cryptographically verified before processing. Prevents spoofed events from polluting the CRM pipeline.
+
+## Test Coverage
+
+62 tests across 7 spec files covering the backend API layer (routes, dispatcher, repository, config, vendor integrations, utilities) and frontend utilities.
+
+```bash
+npm test             # Vitest — 62 tests
+npm run typecheck    # Full TypeScript verification
+```
 
 ## Tech Stack
 
