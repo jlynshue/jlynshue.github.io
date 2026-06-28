@@ -14,11 +14,11 @@ const projects = [
     url: "https://github.com/jlynshue/local-private-orchestration",
   },
   {
-    name: "multi-model-query",
+    name: "personal-productivity-dashboard",
     description:
-      "Fan out prompts to multiple AI models in parallel and compare responses — Claude, Codex, Goose, Bedrock, Ollama.",
-    tags: ["Python", "asyncio", "Bedrock"],
-    url: "https://github.com/jlynshue/multi-model-query",
+      "Unified executive productivity dashboard — multi-stream email, tasks, calendar, and execution metrics in one view.",
+    tags: ["Next.js", "TypeScript", "React"],
+    url: "https://github.com/jlynshue/personal-productivity-dashboard",
   },
   {
     name: "open-ats",
