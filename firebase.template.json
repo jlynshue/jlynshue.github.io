@@ -36,6 +36,20 @@
         }
       },
       {
+        "source": "/sheila",
+        "run": {
+          "serviceId": "sheila-api",
+          "region": "__CLOUD_RUN_REGION__"
+        }
+      },
+      {
+        "source": "/sheila/**",
+        "run": {
+          "serviceId": "sheila-api",
+          "region": "__CLOUD_RUN_REGION__"
+        }
+      },
+      {
         "source": "**",
         "run": {
           "serviceId": "__CLOUD_RUN_SERVICE_ID__",
