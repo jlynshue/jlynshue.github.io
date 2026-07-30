@@ -71,3 +71,36 @@ describe("site route manifest", () => {
     expect(canonicalUrl("/work")).toBe(`${SITE_ORIGIN}/work`);
   });
 });
+
+describe("deploy build graph", () => {
+  const scripts = JSON.parse(fs.readFileSync(path.resolve(__dirname, "..", "..", "package.json"), "utf8"))
+    .scripts as Record<string, string>;
+
+  /**
+   * Expands an npm script one level, inlining any `npm run <name>` it calls.
+   */
+  function expand(scriptName: string, depth = 0): string {
+    const body = scripts[scriptName] ?? "";
+    if (depth > 4) {
+      return body;
+    }
+    return body.replace(/npm run ([\w:.-]+)/g, (_match, name: string) => expand(name, depth + 1));
+  }
+
+  it("runs the prerenderer in every build path that ships to production", () => {
+    // The defect this guards, found on a real preview deploy: `build:all` was
+    // `build:client && build:server` — no prerender. The Dockerfile runs
+    // build:all via gcp-build, so the Cloud Run image shipped a dist with no
+    // prerendered documents and no route manifest. Firebase Hosting served a
+    // correctly prerendered homepage while every other route fell back to the
+    // 90-character shell and unknown paths returned 200 again. Both halves of
+    // the fix were live and it still did not work end to end.
+    for (const entry of ["build", "build:all", "gcp-build"]) {
+      expect(expand(entry), `${entry} must run the prerenderer`).toContain("scripts/prerender.mjs");
+    }
+  });
+
+  it("still builds the server in the container build path", () => {
+    expect(expand("gcp-build")).toContain("tsconfig.server.json");
+  });
+});
