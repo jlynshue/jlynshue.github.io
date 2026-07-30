@@ -5,7 +5,9 @@ import { describe, expect, it } from "vitest";
 import {
   createTrackingToken,
   isHtmlNavigationRequest,
+  normalizeRoutePath,
   parseCookies,
+  prerenderedDocumentPath,
   verifyRawBodySignature,
   verifyTrackingToken,
 } from "./utils.js";
@@ -60,5 +62,18 @@ describe("tracking utils", () => {
 
     expect(verifyRawBodySignature(rawBody, "secret", goodSignature, "base64")).toBe(true);
     expect(verifyRawBodySignature(rawBody, "secret", badSignature, "base64")).toBe(false);
+  });
+
+  it("normalizes route paths by collapsing a trailing slash", () => {
+    expect(normalizeRoutePath("/work/")).toBe("/work");
+    expect(normalizeRoutePath("/work")).toBe("/work");
+    expect(normalizeRoutePath("/")).toBe("/");
+    // Case is preserved deliberately — URL paths are case-sensitive.
+    expect(normalizeRoutePath("/Work")).toBe("/Work");
+  });
+
+  it("maps route paths to their prerendered documents", () => {
+    expect(prerenderedDocumentPath("/")).toBe("/index.html");
+    expect(prerenderedDocumentPath("/work")).toBe("/work/index.html");
   });
 });
