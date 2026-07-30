@@ -9,23 +9,25 @@ import { MemoryTrackingStore } from "./repository.js";
 import type { AppConfig } from "./types.js";
 
 /**
- * Builds a static bundle shaped like the prerenderer's output:
- * a per-route document, a not-found document, and a route manifest.
+ * Builds a static bundle shaped like the prerenderer's output.
+ *
+ * Note the layout: only the homepage sits at a route-shaped path. Every other
+ * document lives under `__prerendered__/` so Firebase Hosting's static matcher
+ * cannot intercept the route and bypass the Cloud Run rewrite.
  */
 async function createPrerenderedBundle(options: { withManifest: boolean }) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "jls-route-test-"));
 
   await fs.writeFile(path.join(dir, "index.html"), "<!doctype html><html><body>HOME DOCUMENT</body></html>", "utf8");
 
-  await fs.mkdir(path.join(dir, "work"));
+  await fs.mkdir(path.join(dir, "__prerendered__"));
   await fs.writeFile(
-    path.join(dir, "work", "index.html"),
+    path.join(dir, "__prerendered__", "work.html"),
     "<!doctype html><html><body>WORK DOCUMENT</body></html>",
     "utf8",
   );
-
   await fs.writeFile(
-    path.join(dir, "not-found.html"),
+    path.join(dir, "__prerendered__", "not-found.html"),
     "<!doctype html><html><body>NOT FOUND DOCUMENT</body></html>",
     "utf8",
   );
@@ -33,7 +35,18 @@ async function createPrerenderedBundle(options: { withManifest: boolean }) {
   if (options.withManifest) {
     await fs.writeFile(
       path.join(dir, "route-manifest.json"),
-      JSON.stringify({ generatedAt: "2026-07-30", paths: ["/", "/work", "/about"] }),
+      JSON.stringify({
+        generatedAt: "2026-07-30",
+        prerenderDir: "__prerendered__",
+        notFoundDocument: "/__prerendered__/not-found.html",
+        documents: {
+          "/": "/index.html",
+          "/work": "/__prerendered__/work.html",
+          // Intentionally points at a document this fixture never writes, to
+          // exercise the fallback path.
+          "/about": "/__prerendered__/about.html",
+        },
+      }),
       "utf8",
     );
   }

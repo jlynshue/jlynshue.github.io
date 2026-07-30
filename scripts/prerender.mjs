@@ -171,12 +171,39 @@ function buildSitemap(routes, toCanonical, lastmod) {
 }
 
 /**
- * Resolves the on-disk output path for a route document.
+ * Directory holding every prerendered document except the homepage.
+ *
+ * Firebase Hosting resolves exact-match static content BEFORE it applies
+ * rewrites, and it resolves `/work` to `dist/work/index.html`. Writing the
+ * documents at their route paths would therefore make the CDN answer those
+ * routes directly and the `**` rewrite to Cloud Run would stop firing — which
+ * silently kills the server-side `page_viewed` event and the `jls_aid`/`jls_sid`
+ * first-party cookies for those routes. A visitor landing on `/work` would then
+ * reach `/r/discovery-call` with no cookie and be minted a fresh anonymous id,
+ * losing first-touch attribution.
+ *
+ * Parking the documents here keeps `/work` a rewrite (so Cloud Run still tracks
+ * it) while the server reads the prerendered body from disk. `cleanUrls` is not
+ * enabled, so nothing here is reachable at a route-shaped URL.
+ *
+ * The homepage is the exception: `dist/index.html` is the Firebase entry point
+ * and is already served statically today, so prerendering it in place changes
+ * nothing about tracking and simply gives the CDN real content.
+ */
+const PRERENDER_DIR = "__prerendered__";
+
+/**
+ * Resolves where a route's document is written and how the server addresses it.
  * @param {string} routePath - Route path such as "/" or "/work".
- * @returns {string} Absolute file path under dist/.
+ * @returns {{absolutePath: string, servedPath: string}} Disk path and the
+ *   static-bundle-relative path the server requests.
  */
 function outputPathFor(routePath) {
-  return routePath === "/" ? path.join(DIST, "index.html") : path.join(DIST, routePath.slice(1), "index.html");
+  if (routePath === "/") {
+    return { absolutePath: path.join(DIST, "index.html"), servedPath: "/index.html" };
+  }
+  const servedPath = `/${PRERENDER_DIR}${routePath}.html`;
+  return { absolutePath: path.join(DIST, `${PRERENDER_DIR}${routePath}.html`), servedPath };
 }
 
 async function main() {
@@ -208,6 +235,8 @@ async function main() {
   const lastmod = new Date().toISOString().slice(0, 10);
   const failures = [];
   const report = [];
+  /** route path -> static-bundle-relative document path, written to the manifest. */
+  const documents = {};
 
   for (const route of ALL_ROUTES) {
     const appHtml = render(route.path);
@@ -226,10 +255,11 @@ async function main() {
       failures.push(`${route.path} rendered only ${chars} chars of visible text (min ${MIN_TEXT_CHARS})`);
     }
 
-    const outPath = outputPathFor(route.path);
-    await fs.mkdir(path.dirname(outPath), { recursive: true });
-    await fs.writeFile(outPath, document, "utf8");
-    report.push({ path: route.path, chars, bytes: document.length, indexable: route.indexable });
+    const { absolutePath, servedPath } = outputPathFor(route.path);
+    await fs.mkdir(path.dirname(absolutePath), { recursive: true });
+    await fs.writeFile(absolutePath, document, "utf8");
+    documents[route.path] = servedPath;
+    report.push({ path: route.path, chars, bytes: document.length, indexable: route.indexable, servedPath });
   }
 
   // A real document for genuine 404s, so an unknown URL returns content and a
@@ -243,14 +273,47 @@ async function main() {
     }).replace("</head>", '  <meta name="robots" content="noindex" />\n  </head>'),
     render(NOT_FOUND_RENDER_PATH),
   );
-  await fs.writeFile(path.join(DIST, "not-found.html"), notFoundHtml, "utf8");
+  // Invariant that protects the tracking pipeline. Firebase Hosting resolves
+  // exact-match static content before rewrites, and resolves "/work" to
+  // "dist/work/index.html". If a document ever lands at a route-shaped path the
+  // CDN answers that route directly, the `**` rewrite stops firing, and the
+  // server-side page_viewed event plus the jls_aid/jls_sid cookies silently
+  // vanish for it. Nothing about the page would look broken, so fail the build.
+  for (const route of ALL_ROUTES) {
+    if (route.path === "/") {
+      continue;
+    }
+    for (const staticMatch of [route.path.slice(1), path.join(route.path.slice(1), "index.html")]) {
+      const collision = path.join(DIST, staticMatch);
+      const exists = await fs
+        .access(collision)
+        .then(() => true)
+        .catch(() => false);
+      if (exists) {
+        failures.push(
+          `${route.path} is statically matchable at dist/${staticMatch} — Firebase Hosting would serve it directly and bypass Cloud Run, losing server-side tracking for that route`,
+        );
+      }
+    }
+  }
+
+  const notFoundServedPath = `/${PRERENDER_DIR}/not-found.html`;
+  await fs.mkdir(path.join(DIST, PRERENDER_DIR), { recursive: true });
+  await fs.writeFile(path.join(DIST, PRERENDER_DIR, "not-found.html"), notFoundHtml, "utf8");
 
   const indexable = SITE_ROUTES.filter((route) => route.indexable);
   await fs.writeFile(path.join(DIST, "sitemap.xml"), buildSitemap(indexable, canonicalUrl, lastmod), "utf8");
 
+  // The manifest is the single authority the server reads: which paths are real
+  // routes, and which document to serve for each. Keeping the document paths in
+  // here rather than recomputing them server-side means the two cannot drift.
   await fs.writeFile(
     path.join(DIST, "route-manifest.json"),
-    `${JSON.stringify({ generatedAt: lastmod, paths: ALL_ROUTES.map((r) => r.path) }, null, 2)}\n`,
+    `${JSON.stringify(
+      { generatedAt: lastmod, prerenderDir: PRERENDER_DIR, notFoundDocument: notFoundServedPath, documents },
+      null,
+      2,
+    )}\n`,
     "utf8",
   );
 

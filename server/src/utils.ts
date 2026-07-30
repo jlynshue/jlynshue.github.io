@@ -407,18 +407,6 @@ export function normalizeRoutePath(pathname: string): string {
   return pathname;
 }
 
-/**
- * Maps a route path to its prerendered document inside the static bundle.
- *
- * `scripts/prerender.mjs` writes the homepage to `dist/index.html` and every
- * other route to `dist/<route>/index.html`.
- *
- * @param {string} routePath - Normalized route path such as "/" or "/work".
- * @returns {string} Static-bundle-relative path to the document.
- */
-export function prerenderedDocumentPath(routePath: string): string {
-  return routePath === "/" ? "/index.html" : `${routePath}/index.html`;
-}
 
 /**
  * Resolves a URL pathname to an absolute file path within the static directory, preventing path traversal.

@@ -7,7 +7,6 @@ import {
   isHtmlNavigationRequest,
   normalizeRoutePath,
   parseCookies,
-  prerenderedDocumentPath,
   verifyRawBodySignature,
   verifyTrackingToken,
 } from "./utils.js";
@@ -70,10 +69,5 @@ describe("tracking utils", () => {
     expect(normalizeRoutePath("/")).toBe("/");
     // Case is preserved deliberately — URL paths are case-sensitive.
     expect(normalizeRoutePath("/Work")).toBe("/Work");
-  });
-
-  it("maps route paths to their prerendered documents", () => {
-    expect(prerenderedDocumentPath("/")).toBe("/index.html");
-    expect(prerenderedDocumentPath("/work")).toBe("/work/index.html");
   });
 });
