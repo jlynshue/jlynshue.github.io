@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +19,7 @@ import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
-const AppRoutes = () => {
+export const AppRoutes = () => {
   usePageTracking();
 
   return (
@@ -41,16 +42,31 @@ const AppRoutes = () => {
   );
 };
 
-const App = () => (
+/**
+ * Provider stack shared by the browser entry and the build-time prerenderer.
+ *
+ * Both entries wrap `AppRoutes` in this exact component, so the markup a
+ * crawler receives comes from the same tree a visitor renders. Only the router
+ * differs — BrowserRouter here, StaticRouter in entry-server.tsx. Keeping the
+ * nesting in one place is what makes the prerendered text trustworthy rather
+ * than a hand-maintained copy that can drift from the page.
+ */
+export const AppProviders = ({ children }: { children: ReactNode }) => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      {children}
     </TooltipProvider>
   </QueryClientProvider>
+);
+
+const App = () => (
+  <AppProviders>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  </AppProviders>
 );
 
 export default App;
