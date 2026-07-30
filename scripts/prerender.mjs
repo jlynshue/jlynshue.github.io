@@ -230,7 +230,15 @@ async function main() {
   );
 
   const server = await import(path.join(SSR_DIST, "entry-server.js"));
-  const { ALL_ROUTES, SITE_ROUTES, canonicalUrl, render, NOT_FOUND_RENDER_PATH } = server;
+  const {
+    ALL_ROUTES,
+    SITE_ROUTES,
+    canonicalUrl,
+    render,
+    NOT_FOUND_RENDER_PATH,
+    DYNAMIC_ROUTE_PATTERNS,
+    routePatternToRegexSource,
+  } = server;
 
   const lastmod = new Date().toISOString().slice(0, 10);
   const failures = [];
@@ -310,7 +318,19 @@ async function main() {
   await fs.writeFile(
     path.join(DIST, "route-manifest.json"),
     `${JSON.stringify(
-      { generatedAt: lastmod, prerenderDir: PRERENDER_DIR, notFoundDocument: notFoundServedPath, documents },
+      {
+        generatedAt: lastmod,
+        prerenderDir: PRERENDER_DIR,
+        notFoundDocument: notFoundServedPath,
+        documents,
+        // Parameterised routes have no prerendered body. They are listed as
+        // compiled matchers so the server answers them 200 with the shell
+        // instead of treating them as genuine 404s.
+        dynamicPatterns: DYNAMIC_ROUTE_PATTERNS.map((pattern) => ({
+          pattern,
+          regex: routePatternToRegexSource(pattern),
+        })),
+      },
       null,
       2,
     )}\n`,

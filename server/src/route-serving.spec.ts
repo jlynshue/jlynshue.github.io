@@ -176,6 +176,51 @@ describe("route-aware HTML serving", () => {
     });
   });
 
+  describe("parameterised routes", () => {
+    beforeEach(async () => {
+      staticDir = await fs.mkdtemp(path.join(os.tmpdir(), "jls-route-dyn-"));
+      await fs.writeFile(
+        path.join(staticDir, "index.html"),
+        "<!doctype html><html><body>HOME DOCUMENT</body></html>",
+        "utf8",
+      );
+      await fs.mkdir(path.join(staticDir, "__prerendered__"));
+      await fs.writeFile(
+        path.join(staticDir, "__prerendered__", "not-found.html"),
+        "<!doctype html><html><body>NOT FOUND DOCUMENT</body></html>",
+        "utf8",
+      );
+      await fs.writeFile(
+        path.join(staticDir, "route-manifest.json"),
+        JSON.stringify({
+          notFoundDocument: "/__prerendered__/not-found.html",
+          documents: { "/": "/index.html" },
+          dynamicPatterns: [{ pattern: "/toolkit/:slug", regex: "^/toolkit/([^/]+)$" }],
+        }),
+        "utf8",
+      );
+    });
+
+    it("answers a parameterised route with 200 and the shell", async () => {
+      // Without this, a dynamic route has no manifest document, falls through to
+      // the 404 branch, and the whole feature disappears in production while
+      // every test stays green — there is no dynamic route to test against.
+      const response = await buildApp(staticDir).handleRequest(htmlRequest("/toolkit/executive-briefing"));
+
+      expect(response.status).toBe(200);
+      await expect(response.text()).resolves.toContain("HOME DOCUMENT");
+    });
+
+    it("does not let a pattern swallow paths outside it", async () => {
+      // ":slug" is exactly one segment, so neither a missing nor an extra
+      // segment may match.
+      for (const badPath of ["/toolkit", "/toolkit/a/b", "/toolkitx/a"]) {
+        const response = await buildApp(staticDir).handleRequest(htmlRequest(badPath));
+        expect(response.status, badPath).toBe(404);
+      }
+    });
+  });
+
   describe("sitemap content type", () => {
     beforeEach(async () => {
       staticDir = await createPrerenderedBundle({ withManifest: true });

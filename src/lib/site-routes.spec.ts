@@ -3,7 +3,15 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ALL_ROUTES, SITE_ROUTES, allKnownPaths, canonicalUrl, SITE_ORIGIN } from "./site-routes";
+import {
+  ALL_ROUTES,
+  SITE_ROUTES,
+  DYNAMIC_ROUTE_PATTERNS,
+  allKnownPaths,
+  canonicalUrl,
+  routePatternToRegexSource,
+  SITE_ORIGIN,
+} from "./site-routes";
 
 /**
  * Extracts every concrete `path="…"` from the `<Route>` elements in App.tsx.
@@ -24,10 +32,39 @@ describe("site route manifest", () => {
     // route can be added to the router and silently never be indexed, never
     // appear in the sitemap, and — because the server reads this manifest to
     // tell a real route from a typo — start returning 404.
-    const declared = routePathsDeclaredInApp().sort();
+    const declared = routePathsDeclaredInApp()
+      .filter((routePath) => !routePath.includes(":"))
+      .sort();
     const manifested = allKnownPaths().sort();
 
     expect(manifested).toEqual(declared);
+  });
+
+  it("declares every parameterised route so the server does not 404 it", () => {
+    // A `:param` route cannot be prerendered from a fixed list, so it must be
+    // registered as a pattern instead. Miss this and the route 404s in
+    // production while the suite stays green.
+    const declaredDynamic = routePathsDeclaredInApp()
+      .filter((routePath) => routePath.includes(":"))
+      .sort();
+
+    expect([...DYNAMIC_ROUTE_PATTERNS].sort()).toEqual(declaredDynamic);
+  });
+
+  it("compiles route patterns to single-segment matchers", () => {
+    const regex = new RegExp(routePatternToRegexSource("/toolkit/:slug"));
+
+    expect(regex.test("/toolkit/executive-briefing")).toBe(true);
+    expect(regex.test("/toolkit")).toBe(false);
+    expect(regex.test("/toolkit/a/b")).toBe(false);
+    expect(regex.test("/toolkitx/a")).toBe(false);
+  });
+
+  it("escapes regex metacharacters in literal segments", () => {
+    const regex = new RegExp(routePatternToRegexSource("/a.b/:id"));
+
+    expect(regex.test("/a.b/1")).toBe(true);
+    expect(regex.test("/axb/1")).toBe(false);
   });
 
   it("gives every route a distinct title and description", () => {

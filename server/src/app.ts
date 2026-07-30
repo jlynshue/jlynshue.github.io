@@ -48,6 +48,12 @@ interface RouteManifest {
   documents: Map<string, string>;
   /** Document served for genuine 404s, or null if the prerenderer wrote none. */
   notFoundDocument: string | null;
+  /**
+   * Matchers for parameterised routes, which have no prerendered document.
+   * A path matching one of these is a real route and must answer 200 with the
+   * shell, not 404.
+   */
+  dynamicPatterns: RegExp[];
 }
 
 interface AppDependencies {
@@ -317,10 +323,28 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
 
     try {
       const raw = await fs.readFile(path.join(config.staticDir, "route-manifest.json"), "utf8");
-      const parsed = JSON.parse(raw) as { documents?: unknown; notFoundDocument?: unknown };
+      const parsed = JSON.parse(raw) as {
+        documents?: unknown;
+        notFoundDocument?: unknown;
+        dynamicPatterns?: unknown;
+      };
       const documents = parsed.documents;
       if (typeof documents !== "object" || documents === null || Object.keys(documents).length === 0) {
         throw new Error("route-manifest.json has no documents map");
+      }
+      const dynamicPatterns: RegExp[] = [];
+      if (Array.isArray(parsed.dynamicPatterns)) {
+        for (const entry of parsed.dynamicPatterns) {
+          const source = (entry as { regex?: unknown })?.regex;
+          if (typeof source !== "string") {
+            continue;
+          }
+          try {
+            dynamicPatterns.push(new RegExp(source));
+          } catch {
+            console.warn(`[app] ignoring unparseable dynamic route matcher: ${source}`);
+          }
+        }
       }
       routeManifestCache = {
         documents: new Map(
@@ -329,6 +353,7 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
           ),
         ),
         notFoundDocument: typeof parsed.notFoundDocument === "string" ? parsed.notFoundDocument : null,
+        dynamicPatterns,
       };
     } catch (error) {
       console.warn(
@@ -368,7 +393,10 @@ export function createApp(config: AppConfig, dependencies: AppDependencies) {
     // With no manifest we cannot tell a real route from a typo, so preserve the
     // previous behaviour (serve the shell with a 200) rather than 404-ing the
     // whole site. Note this means soft-404 protection is OFF in that state.
-    const isKnownRoute = manifest === null || manifest.documents.has(routePath);
+    // A parameterised route has no prerendered document but is still a real
+    // route: it must answer 200 with the shell and render client-side.
+    const matchesDynamicRoute = manifest !== null && manifest.dynamicPatterns.some((re) => re.test(routePath));
+    const isKnownRoute = manifest === null || manifest.documents.has(routePath) || matchesDynamicRoute;
 
     const candidates = isKnownRoute
       ? [manifest?.documents.get(routePath), "/index.html"]

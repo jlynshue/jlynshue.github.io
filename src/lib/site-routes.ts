@@ -128,6 +128,43 @@ export const LEGACY_ROUTES: SiteRoute[] = [
 /** Every route the app prerenders — indexable and legacy alike. */
 export const ALL_ROUTES: SiteRoute[] = [...SITE_ROUTES, ...LEGACY_ROUTES];
 
+/**
+ * Parameterised routes, which cannot be prerendered from a fixed list.
+ *
+ * These exist so the server still answers them with a 200. Without this list a
+ * dynamic route would fall through the manifest lookup and be treated as a
+ * genuine 404 — the whole feature would vanish in production while every test
+ * stayed green, because no dynamic route exists to test against.
+ *
+ * A route listed here is served the SPA shell and rendered client-side. It gets
+ * no prerendered body and no sitemap entry; if such a route ever needs to be
+ * indexable it has to be enumerated in SITE_ROUTES instead.
+ *
+ * Use react-router syntax, e.g. "/toolkit/:slug".
+ */
+export const DYNAMIC_ROUTE_PATTERNS: string[] = [];
+
+/**
+ * Compiles a react-router path pattern to an anchored regular-expression source.
+ *
+ * Literal segments are escaped; each `:param` matches exactly one path segment.
+ * The source (not a RegExp) is what lands in the manifest, so the server can
+ * rebuild the matcher without duplicating this conversion.
+ *
+ * @param {string} pattern - Route pattern such as "/toolkit/:slug".
+ * @returns {string} Anchored regex source, e.g. "^/toolkit/([^/]+)$".
+ */
+export function routePatternToRegexSource(pattern: string): string {
+  const body = pattern
+    .split("/")
+    .filter((segment) => segment.length > 0)
+    .map((segment) =>
+      segment.startsWith(":") ? "([^/]+)" : segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    )
+    .join("/");
+  return `^/${body}$`;
+}
+
 /** Every path the SPA answers with a 200. Anything else is a genuine 404. */
 export function allKnownPaths(): string[] {
   return ALL_ROUTES.map((route) => route.path);

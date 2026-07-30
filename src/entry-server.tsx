@@ -21,6 +21,8 @@ export {
   LEGACY_ROUTES,
   ALL_ROUTES,
   allKnownPaths,
+  DYNAMIC_ROUTE_PATTERNS,
+  routePatternToRegexSource,
   canonicalUrl,
   SITE_ORIGIN,
   DEFAULT_OG_IMAGE,
