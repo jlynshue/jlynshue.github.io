@@ -16,6 +16,7 @@ import Writing from "./pages/Writing";
 import Lab from "./pages/Lab";
 import Chat from "./pages/Chat";
 import About from "./pages/About";
+import ToolkitStub from "./pages/toolkit/ToolkitStub";
 
 const queryClient = new QueryClient();
 
@@ -34,10 +35,14 @@ export const AppRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="*" element={<NotFound />} />
       </Route>
-      {/* Legacy pages outside WallpaperLayout */}
+      {/* Offer pages outside WallpaperLayout — these use Header/Footer directly.
+          react-router v6 matches by ranked specificity, not declaration order, so
+          these resolve ahead of the "*" above despite being declared after it.
+          Do not "fix" that by reordering. */}
       <Route path="/v1" element={<Index />} />
       <Route path="/sprint" element={<Sprint />} />
       <Route path="/diagnostic" element={<Diagnostic />} />
+      <Route path="/toolkit/:slug" element={<ToolkitStub />} />
     </Routes>
   );
 };

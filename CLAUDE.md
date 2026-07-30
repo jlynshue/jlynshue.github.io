@@ -44,7 +44,9 @@ npm run format.fix   # Prettier --write .
 src/                     # React frontend
 ├── App.tsx              # Router: react-router-dom <Routes> (SPA)
 ├── main.tsx             # Entry
-├── pages/               # Index, HowIWork, Sprint, Diagnostic, NotFound
+├── pages/               # Redesign (/), Work, Writing, Lab, Chat, About, Index (/v1),
+│                        #   Sprint, Diagnostic, NotFound
+├── pages/toolkit/       # ToolkitStub template + products.ts registry (/toolkit/:slug)
 ├── components/          # Section components + components/ui/ (shadcn primitives)
 ├── hooks/  lib/  types/ # Hooks, utils (cn in lib/utils.ts), shared types
 server/src/              # Node.js backend
@@ -64,18 +66,38 @@ Dockerfile               # Multi-stage Node 20 build
 
 ## Routing
 
-Routes are defined in `src/App.tsx` with `react-router-dom`:
+Routes are defined in `src/App.tsx` with `react-router-dom` **v6**, in two groups:
 
 ```tsx
 <Routes>
-  <Route path="/" element={<Index />} />
+  {/* Brand pages — wrapped in <WallpaperLayout /> */}
+  <Route element={<WallpaperLayout />}>
+    <Route path="/" element={<Redesign />} />
+    <Route path="/work" element={<Work />} />
+    <Route path="/writing" element={<Writing />} />
+    <Route path="/lab" element={<Lab />} />
+    <Route path="/chat" element={<Chat />} />
+    <Route path="/about" element={<About />} />
+    <Route path="*" element={<NotFound />} />
+  </Route>
+
+  {/* Offer pages — use <Header /> / <Footer /> directly, no WallpaperLayout */}
+  <Route path="/v1" element={<Index />} />
   <Route path="/sprint" element={<Sprint />} />
   <Route path="/diagnostic" element={<Diagnostic />} />
-  <Route path="/how-i-work" element={<HowIWork />} />
-  {/* Keep custom routes ABOVE the catch-all */}
-  <Route path="*" element={<NotFound />} />
+  <Route path="/toolkit/:slug" element={<ToolkitStub />} />
 </Routes>
 ```
+
+> **Declaration order does not decide matching.** react-router v6 matches by ranked
+> path specificity, so the offer routes resolve ahead of the `"*"` above them even
+> though they are declared after it — `/sprint` and `/diagnostic` have shipped this
+> way. Do not "fix" it by reordering. (Ordering *did* matter in v5; that advice is
+> stale here.)
+
+Page components live in `src/pages/`. `/toolkit/:slug` is a **template**, not a page
+per product: it renders from the registry in `src/pages/toolkit/products.ts`, and an
+unknown slug renders `<NotFound />` rather than an empty shell.
 
 Page components live in `src/pages/`. Styling uses Tailwind (tokens in
 `tailwind.config.ts`), shadcn/ui components in `src/components/ui/`, and the `cn`
