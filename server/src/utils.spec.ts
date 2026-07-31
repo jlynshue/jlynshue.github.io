@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   createTrackingToken,
   isHtmlNavigationRequest,
+  normalizeRoutePath,
   parseCookies,
   verifyRawBodySignature,
   verifyTrackingToken,
@@ -60,5 +61,13 @@ describe("tracking utils", () => {
 
     expect(verifyRawBodySignature(rawBody, "secret", goodSignature, "base64")).toBe(true);
     expect(verifyRawBodySignature(rawBody, "secret", badSignature, "base64")).toBe(false);
+  });
+
+  it("normalizes route paths by collapsing a trailing slash", () => {
+    expect(normalizeRoutePath("/work/")).toBe("/work");
+    expect(normalizeRoutePath("/work")).toBe("/work");
+    expect(normalizeRoutePath("/")).toBe("/");
+    // Case is preserved deliberately — URL paths are case-sensitive.
+    expect(normalizeRoutePath("/Work")).toBe("/Work");
   });
 });

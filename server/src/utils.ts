@@ -26,6 +26,10 @@ const STATIC_EXTENSIONS = new Set([
   ".svg",
   ".txt",
   ".webp",
+  // Without .xml here, a missing /sitemap.xml falls through to the HTML shell
+  // and answers 200 text/html. That is exactly why the absent sitemap went
+  // unnoticed: a status-code-only check cannot distinguish it from a real file.
+  ".xml",
 ]);
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -42,6 +46,7 @@ const CONTENT_TYPES: Record<string, string> = {
   ".svg": "image/svg+xml",
   ".txt": "text/plain; charset=utf-8",
   ".webp": "image/webp",
+  ".xml": "application/xml; charset=utf-8",
 };
 
 /**
@@ -384,6 +389,24 @@ export function isHtmlNavigationRequest(request: Request, url: URL): boolean {
   const accept = request.headers.get("accept") ?? "";
   return accept.includes("text/html") || accept.includes("*/*");
 }
+
+/**
+ * Normalizes an HTML route path for manifest lookup.
+ *
+ * Collapses a trailing slash so "/work/" and "/work" are the same route, while
+ * keeping "/" itself intact. Case is preserved — URL paths are case-sensitive
+ * and lowercasing here would make "/Work" resolve as a real route.
+ *
+ * @param {string} pathname - Raw URL pathname.
+ * @returns {string} Normalized route path.
+ */
+export function normalizeRoutePath(pathname: string): string {
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    return pathname.slice(0, -1);
+  }
+  return pathname;
+}
+
 
 /**
  * Resolves a URL pathname to an absolute file path within the static directory, preventing path traversal.

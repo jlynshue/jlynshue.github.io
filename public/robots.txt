@@ -12,3 +12,9 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Build-time prerendered route bodies. The server reads these and serves them
+# at the canonical route URLs, so they must never be crawled directly.
+Disallow: /__prerendered__/
+
+Sitemap: https://jonathanlynshue.com/sitemap.xml
