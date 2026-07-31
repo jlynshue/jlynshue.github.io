@@ -4,10 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:client",
+    "build": "npm run build:client && npm run prerender",
     "build:client": "vite build",
+    "prerender": "node scripts/prerender.mjs",
     "build:server": "tsc -p tsconfig.server.json",
-    "build:all": "npm run build:client && npm run build:server",
+    "build:all": "npm run build && npm run build:server",
     "gcp-build": "npm run build:all",
     "start": "node server/dist/index.js",
     "test": "vitest --run",
