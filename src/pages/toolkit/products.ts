@@ -54,7 +54,18 @@ export interface ToolkitProduct {
     items: string[];
   };
   sample: {
-    label: string;
+    /**
+     * Which trap the sample illustrates — 1-based family, then 1-based item
+     * within that family.
+     *
+     * The displayed label is computed from these by `sampleLabel()` rather than
+     * written by hand. The hand-written version read "Sample — trap 03" while
+     * the sample was Family 01's *first* item, so the one worked example on a
+     * page about verification was misnumbered against its own list. A number
+     * that has to agree with a list should be derived from the list.
+     */
+    trapFamily: number;
+    trapItem: number;
     title: string;
     body: string;
   };
@@ -135,7 +146,9 @@ const agentOpsFieldGuide: ToolkitProduct = {
   },
 
   sample: {
-    label: "Sample — trap 03",
+    // Family 01, item 1 — "Tests pass, feature unreachable". Renders as trap 01.
+    trapFamily: 1,
+    trapItem: 1,
     title: "Green tests do not mean the feature is reachable.",
     body: "Three of four PRs in one batch shipped a mechanism that was unit-tested directly and reachable from no production route. The helper was byte-for-byte correct. Every test called it directly, so the suite could not see the gap. One grep for the symbol across the source tree returned only its own definition.",
   },
@@ -193,6 +206,82 @@ export const TEMPLATE_COPY = {
   faqHeading: "Questions",
   ladderCta: "Schedule a Discovery Call",
 } as const;
+
+/**
+ * Analytics placement for the hero waitlist CTA.
+ *
+ * This was the constant "toolkit-hero". It is the CTA S1 measures demand on,
+ * and `handleCTAClick` sends only (ctaName, placement) to GA4 — the slug
+ * reaches the server event through the `asset` query param but never the client
+ * event. With one product the number was fine; with two, every waitlist click
+ * would have been indistinguishable in GA4, which is the data S3 calibrates a
+ * threshold against.
+ *
+ * Lives here rather than in the template so it can be asserted without
+ * importing ToolkitStub, which would pull in the whole provider stack.
+ *
+ * @param {ToolkitProduct} product - The product being rendered.
+ * @returns {string} e.g. "toolkit-agent-ops-field-guide-hero".
+ */
+export function heroPlacement(product: ToolkitProduct): string {
+  return `toolkit-${product.slug}-hero`;
+}
+
+/**
+ * Analytics placement for the closing discovery-call CTA.
+ *
+ * Slot suffixes on both placements follow the existing `<page>-<slot>` shape
+ * (`sprint-page`, `diagnostic-page`). Those pages carry a single CTA each, so
+ * this template is the first that has to tell two apart.
+ *
+ * @param {ToolkitProduct} product - The product being rendered.
+ * @returns {string} e.g. "toolkit-agent-ops-field-guide-footer".
+ */
+export function ladderPlacement(product: ToolkitProduct): string {
+  return `toolkit-${product.slug}-footer`;
+}
+
+/**
+ * The trap the sample illustrates, resolved out of the families list.
+ *
+ * @param {ToolkitProduct} product - The product being rendered.
+ * @returns {{ position: number; text: string } | undefined} Flat 1-based
+ *   position across all families and the trap's own text, or undefined if the
+ *   sample's indices do not point at a real item.
+ */
+export function sampleTrap(
+  product: ToolkitProduct,
+): { position: number; text: string } | undefined {
+  const { trapFamily, trapItem } = product.sample;
+  const groups = product.families.groups;
+  const family = groups[trapFamily - 1];
+  const text = family?.items[trapItem - 1];
+  if (!family || text === undefined) {
+    return undefined;
+  }
+  const preceding = groups
+    .slice(0, trapFamily - 1)
+    .reduce((total, group) => total + group.items.length, 0);
+  return { position: preceding + trapItem, text };
+}
+
+/**
+ * The sample card's eyebrow label, numbered from the families list.
+ *
+ * Falls back to an unnumbered "Sample" when the indices do not resolve, so a
+ * bad reference degrades to saying less rather than to asserting a wrong
+ * number. `products.spec.ts` fails on that case rather than shipping it.
+ *
+ * @param {ToolkitProduct} product - The product being rendered.
+ * @returns {string} e.g. "Sample — trap 01".
+ */
+export function sampleLabel(product: ToolkitProduct): string {
+  const trap = sampleTrap(product);
+  if (!trap) {
+    return "Sample";
+  }
+  return `Sample — trap ${String(trap.position).padStart(2, "0")}`;
+}
 
 /**
  * The price numeral as the page prints it, currency symbol attached.

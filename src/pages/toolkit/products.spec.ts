@@ -8,7 +8,11 @@ import {
   TEMPLATE_COPY,
   TOOLKIT_PRODUCTS,
   getToolkitProduct,
+  heroPlacement,
+  ladderPlacement,
   renderedPriceLine,
+  sampleLabel,
+  sampleTrap,
   type ToolkitProduct,
 } from "./products";
 
@@ -61,10 +65,17 @@ function collectStrings(value: unknown, into: string[] = []): string[] {
 }
 
 function copyOf(product: ToolkitProduct): string {
-  // renderedPriceLine is appended because collectStrings walks string leaves and
-  // priceUsd is a number — so "$149" appeared nowhere in the scanned text even
-  // though it is the largest thing in the hero.
-  return [...collectStrings(product), renderedPriceLine(product)].join("\n");
+  // Both derived strings are appended because collectStrings only walks string
+  // leaves of the registry. priceUsd is a number, so "$149" appeared nowhere in
+  // the scanned text despite being the largest thing in the hero; and the sample
+  // label is now computed by sampleLabel rather than stored, so it left the
+  // registry when it stopped being hand-written. Anything the page renders but
+  // does not store has to be added here explicitly.
+  return [
+    ...collectStrings(product),
+    renderedPriceLine(product),
+    sampleLabel(product),
+  ].join("\n");
 }
 
 /**
@@ -120,6 +131,95 @@ describe("toolkit product registry", () => {
       expect(product.included.items.length).toBeGreaterThan(0);
       // content-factory#28 asks for three or more.
       expect(product.faq.length).toBeGreaterThanOrEqual(3);
+    }
+  });
+});
+
+describe("sample trap numbering", () => {
+  it("points every sample at a trap that exists", () => {
+    for (const [slug, product] of products) {
+      const trap = sampleTrap(product);
+      expect(trap, `${slug} sample does not resolve to a trap`).toBeDefined();
+      expect(trap?.text.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("numbers the sample from its position across all families", () => {
+    // The specific pin for the shipped product. The label previously read
+    // "trap 03" while the sample was Family 01's FIRST item — a number written
+    // by hand that disagreed with the list on the same page.
+    const product = TOOLKIT_PRODUCTS["agent-ops-field-guide"];
+    const trap = sampleTrap(product);
+
+    expect(trap?.position).toBe(1);
+    expect(trap?.text).toBe("Tests pass, feature unreachable");
+    expect(sampleLabel(product)).toBe("Sample — trap 01");
+  });
+
+  it("counts preceding families when the sample is not in the first", () => {
+    // Proves the flat numbering is actually computed rather than echoing
+    // trapItem. Families here are 5 long, so family 3 item 2 must be trap 12.
+    const product = TOOLKIT_PRODUCTS["agent-ops-field-guide"];
+    const thirdFamily: ToolkitProduct = {
+      ...product,
+      sample: { ...product.sample, trapFamily: 3, trapItem: 2 },
+    };
+
+    expect(sampleTrap(thirdFamily)?.position).toBe(12);
+    expect(sampleTrap(thirdFamily)?.text).toBe("A cross-review is a snapshot");
+    expect(sampleLabel(thirdFamily)).toBe("Sample — trap 12");
+  });
+
+  it("declines to number a reference that does not resolve", () => {
+    // The discriminating case: an out-of-range reference must degrade to saying
+    // less, never to asserting a wrong number. The first test above is what
+    // fails if a real product ever lands in this state.
+    const product = TOOLKIT_PRODUCTS["agent-ops-field-guide"];
+    for (const bad of [
+      { trapFamily: 9, trapItem: 1 },
+      { trapFamily: 1, trapItem: 99 },
+      { trapFamily: 0, trapItem: 1 },
+    ]) {
+      const broken: ToolkitProduct = {
+        ...product,
+        sample: { ...product.sample, ...bad },
+      };
+      expect(sampleTrap(broken), JSON.stringify(bad)).toBeUndefined();
+      expect(sampleLabel(broken)).toBe("Sample");
+    }
+  });
+});
+
+describe("analytics placements", () => {
+  it("identifies the product in both placements", () => {
+    // The hero placement was the constant "toolkit-hero". handleCTAClick sends
+    // only (ctaName, placement) to GA4, so the waitlist click — the event S1
+    // measures demand on — carried no product identity, and two products would
+    // have been indistinguishable in the data S3 calibrates against.
+    for (const [slug, product] of products) {
+      expect(heroPlacement(product)).toContain(slug);
+      expect(ladderPlacement(product)).toContain(slug);
+    }
+  });
+
+  it("distinguishes the two slots on the same page", () => {
+    for (const [, product] of products) {
+      expect(heroPlacement(product)).not.toBe(ladderPlacement(product));
+    }
+  });
+
+  it("keeps placements URL-safe and slot-suffixed", () => {
+    // These land in a query string and then in a GA4 dimension, so a stray
+    // space or slash would be silently encoded and bucket as a different value.
+    for (const [, product] of products) {
+      for (const placement of [
+        heroPlacement(product),
+        ladderPlacement(product),
+      ]) {
+        expect(placement).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+      }
+      expect(heroPlacement(product).endsWith("-hero")).toBe(true);
+      expect(ladderPlacement(product).endsWith("-footer")).toBe(true);
     }
   });
 });

@@ -9,7 +9,14 @@ import {
   handleCTAClick,
   leadMagnetHref,
 } from "@/lib/tracking";
-import { TEMPLATE_COPY, getToolkitProduct, priceAmount } from "./products";
+import {
+  TEMPLATE_COPY,
+  getToolkitProduct,
+  heroPlacement,
+  ladderPlacement,
+  priceAmount,
+  sampleLabel,
+} from "./products";
 
 /**
  * Stub landing page for `/toolkit/:slug`, rendered from the product registry.
@@ -41,8 +48,11 @@ const ToolkitStub = () => {
     );
   }
 
-  const heroPlacement = "toolkit-hero";
-  const ladderPlacement = `toolkit-${product.slug}`;
+  // Both placements are derived in products.ts so they can be asserted there.
+  // Safe to rename: /toolkit/<slug> answers 404 in production today, so no
+  // toolkit placement has ever been emitted and there is no history to break.
+  const hero = heroPlacement(product);
+  const ladder = ladderPlacement(product);
 
   return (
     <div className="min-h-screen">
@@ -70,8 +80,8 @@ const ToolkitStub = () => {
               {product.priceKicker}
             </p>
             <a
-              href={leadMagnetHref(product.slug, heroPlacement)}
-              onClick={handleCTAClick("lead_magnet", heroPlacement)}
+              href={leadMagnetHref(product.slug, hero)}
+              onClick={handleCTAClick("lead_magnet", hero)}
               className="inline-flex items-center px-10 py-5 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
             >
               {TEMPLATE_COPY.heroCta}
@@ -165,7 +175,7 @@ const ToolkitStub = () => {
           <FadeIn>
             <div className="bg-gray-50 rounded-r-xl border border-gray-100 border-l-4 border-l-gold p-8">
               <p className="text-xs font-semibold text-gold uppercase tracking-wider mb-3">
-                {product.sample.label}
+                {sampleLabel(product)}
               </p>
               <h3 className="font-semibold text-charcoal text-lg mb-3">
                 {product.sample.title}
@@ -216,8 +226,8 @@ const ToolkitStub = () => {
             </h2>
             <p className="text-gray-300 mb-10">{product.closing.body}</p>
             <a
-              href={discoveryCallHref(ladderPlacement)}
-              onClick={handleCTAClick("discovery_call", ladderPlacement)}
+              href={discoveryCallHref(ladder)}
+              onClick={handleCTAClick("discovery_call", ladder)}
               className="inline-flex items-center px-10 py-5 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
             >
               {TEMPLATE_COPY.ladderCta}
