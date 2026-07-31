@@ -1,9 +1,14 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 import {
   PRICE_CEILING_USD,
   PRICE_FLOOR_USD,
+  TEMPLATE_COPY,
   TOOLKIT_PRODUCTS,
   getToolkitProduct,
+  renderedPriceLine,
   type ToolkitProduct,
 } from "./products";
 
@@ -56,7 +61,29 @@ function collectStrings(value: unknown, into: string[] = []): string[] {
 }
 
 function copyOf(product: ToolkitProduct): string {
-  return collectStrings(product).join("\n");
+  // renderedPriceLine is appended because collectStrings walks string leaves and
+  // priceUsd is a number — so "$149" appeared nowhere in the scanned text even
+  // though it is the largest thing in the hero.
+  return [...collectStrings(product), renderedPriceLine(product)].join("\n");
+}
+
+/**
+ * ToolkitStub.tsx with comments removed.
+ *
+ * Read as text rather than imported, following the precedent in
+ * `site-routes.spec.ts` — importing the component pulls in the provider stack.
+ * Comments have to go first because the comments in these files legitimately
+ * quote the banned wording in order to explain the rules, and a raw scan would
+ * flag the explanation instead of a violation.
+ */
+function templateSourceWithoutComments(): string {
+  const source = fs.readFileSync(
+    path.resolve(__dirname, "ToolkitStub.tsx"),
+    "utf8",
+  );
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
 }
 
 const products = Object.entries(TOOLKIT_PRODUCTS);
@@ -130,18 +157,44 @@ describe("toolkit copy compliance", () => {
   });
 
   it("does not flag engineering vocabulary that merely resembles commerce", () => {
-    // Guards the narrowing above. If someone re-broadens the checkout rule to the
-    // bare noun, this fails and explains why before the copy scan does.
+    // Each sample is checked against BOTH lists, because the two false positives
+    // came from different lists: "checkout" from the stub rules, "guarantees"
+    // from the upstream banned claims. The first version of this test checked
+    // both samples against UNSHIPPABLE_STUB_CLAIMS only — which contains no
+    // guarantee pattern — so the assertion pinning the guarantee rewording was
+    // vacuous and would have passed no matter what that pattern did.
     const legitimate = [
       "The primary checkout went stale",
       "A guard only covers what it gates",
     ];
     for (const sample of legitimate) {
-      expect(
-        UNSHIPPABLE_STUB_CLAIMS.some((p) => p.test(sample)),
-        `false positive on: ${sample}`,
-      ).toBe(false);
+      for (const pattern of [
+        ...BANNED_CLAIM_PATTERNS,
+        ...UNSHIPPABLE_STUB_CLAIMS,
+      ]) {
+        expect(
+          pattern.test(sample),
+          `false positive on "${sample}" from ${pattern}`,
+        ).toBe(false);
+      }
     }
+  });
+
+  it("still flags the wording those carve-outs were made around", () => {
+    // The negative control for the test above. Both carve-outs were supposed to
+    // be made by rewording the copy, not by weakening the pattern. If someone
+    // "fixes" a future false positive by gutting the regex instead, the test
+    // above keeps passing and only this one notices.
+    expect(
+      BANNED_CLAIM_PATTERNS.some((p) =>
+        p.test("A guard guarantees only what it gates"),
+      ),
+      "the guarantee pattern no longer fires on the original wording",
+    ).toBe(true);
+    expect(
+      UNSHIPPABLE_STUB_CLAIMS.some((p) => p.test("Proceed to checkout")),
+      "the checkout pattern no longer fires on commerce phrasing",
+    ).toBe(true);
   });
 
   it("ships no banned claims", () => {
@@ -165,6 +218,49 @@ describe("toolkit copy compliance", () => {
       }
     }
   });
+
+  it("holds the template's own copy to the same rules", () => {
+    // TEMPLATE_COPY is not part of any product, so the per-product scans above
+    // never touch it — and the hero button lives here.
+    const copy = Object.values(TEMPLATE_COPY).join("\n");
+    for (const pattern of [
+      ...BANNED_CLAIM_PATTERNS,
+      ...UNSHIPPABLE_STUB_CLAIMS,
+    ]) {
+      expect(pattern.test(copy), `template copy matches ${pattern}`).toBe(
+        false,
+      );
+    }
+  });
+
+  it("leaves no user-facing copy hardcoded in the template", () => {
+    // Backstop for the two scans above, which can only check strings that were
+    // put where they could be found. This one reads the JSX itself, so a string
+    // typed straight into the markup is still covered.
+    const source = templateSourceWithoutComments();
+    for (const pattern of [
+      ...BANNED_CLAIM_PATTERNS,
+      ...UNSHIPPABLE_STUB_CLAIMS,
+    ]) {
+      expect(pattern.test(source), `ToolkitStub.tsx matches ${pattern}`).toBe(
+        false,
+      );
+    }
+  });
+
+  it("strips comments before scanning, but keeps the code", () => {
+    // Proves the previous test can still see a violation. Comment-stripping is
+    // load-bearing there — these files quote the banned wording to explain the
+    // rules — and a stripper that ate the whole file would make that scan pass
+    // unconditionally.
+    const source = templateSourceWithoutComments();
+
+    expect(source).toContain("TEMPLATE_COPY.heroCta");
+    expect(source).toContain("getToolkitProduct");
+    // The explanatory comments quote both of these; the stripped source must not.
+    expect(source).not.toContain("instant download");
+    expect(source).not.toContain("dark text on white");
+  });
 });
 
 describe("getToolkitProduct", () => {
@@ -180,5 +276,34 @@ describe("getToolkitProduct", () => {
 
   it("returns undefined when the route param is missing", () => {
     expect(getToolkitProduct(undefined)).toBeUndefined();
+  });
+
+  it("returns undefined for object-prototype members", () => {
+    // The slug is attacker-controlled in the sense that it is whatever is in the
+    // URL. A bare TOOLKIT_PRODUCTS[slug] reads the prototype chain, so each of
+    // these returned a truthy non-product, passed the caller's `!product` guard,
+    // and rendered the product page with every field undefined — a blank page at
+    // HTTP 200 rather than the 404. There is no ErrorBoundary above this route.
+    for (const slug of [
+      "constructor",
+      "toString",
+      "valueOf",
+      "hasOwnProperty",
+      "__proto__",
+      "propertyIsEnumerable",
+    ]) {
+      expect(
+        getToolkitProduct(slug),
+        `${slug} resolved to something`,
+      ).toBeUndefined();
+    }
+  });
+
+  it("resolves only the slugs the registry declares", () => {
+    // The positive half of the check above: proving prototype keys are rejected
+    // is only reassuring if a real key is still accepted.
+    for (const [slug] of products) {
+      expect(getToolkitProduct(slug)?.slug).toBe(slug);
+    }
   });
 });

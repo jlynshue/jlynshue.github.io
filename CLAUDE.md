@@ -95,13 +95,35 @@ Routes are defined in `src/App.tsx` with `react-router-dom` **v6**, in two group
 > way. Do not "fix" it by reordering. (Ordering *did* matter in v5; that advice is
 > stale here.)
 
+### Adding a route takes two edits, not one
+
+`src/App.tsx` decides what React renders. `src/lib/site-routes.ts` decides what the
+**server** believes exists — it is compiled into `dist/route-manifest.json`, and
+`server/src/app.ts` answers 404 for any HTML path the manifest does not know. A route
+added only to App.tsx is served a 404 in production.
+
+| Route shape | Register in | Effect |
+|-------------|-------------|--------|
+| Fixed (`/work`) | `SITE_ROUTES` (or `LEGACY_ROUTES` if it should not be indexed) | Prerendered with its own title/description/canonical; in `sitemap.xml` when `indexable` |
+| Parameterised (`/toolkit/:slug`) | `DYNAMIC_ROUTE_PATTERNS` | Answered 200 and rendered client-side; **no** prerendered document, no sitemap entry |
+
+`src/lib/site-routes.spec.ts` reads App.tsx and fails when the two disagree, so this
+is a red suite rather than a silent 404. Do not delete that guard to make a build pass.
+
+⚠️ A parameterised route is served `dist/index.html` — the **prerendered homepage** —
+so its `<title>`, `og:url` and `canonical` are the homepage's. Fine for the SPA (React
+routes on hydration) and wrong for anything that does not run JS: link previews and
+crawlers see the homepage. Enumerate the concrete paths in `SITE_ROUTES` if a
+parameterised page needs its own metadata.
+
 Page components live in `src/pages/`. `/toolkit/:slug` is a **template**, not a page
 per product: it renders from the registry in `src/pages/toolkit/products.ts`, and an
-unknown slug renders `<NotFound />` rather than an empty shell.
+unknown slug renders `<NotFound />` rather than an empty shell. That `<NotFound />`
+must be wrapped in `.brand` — every design token is declared on that class, so
+rendering it bare produces an unstyled page.
 
-Page components live in `src/pages/`. Styling uses Tailwind (tokens in
-`tailwind.config.ts`), shadcn/ui components in `src/components/ui/`, and the `cn`
-helper from `@/lib/utils` (clsx + tailwind-merge).
+Styling uses Tailwind (tokens in `tailwind.config.ts`), shadcn/ui components in
+`src/components/ui/`, and the `cn` helper from `@/lib/utils` (clsx + tailwind-merge).
 
 ## Server Routes
 

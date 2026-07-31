@@ -9,7 +9,7 @@ import {
   handleCTAClick,
   leadMagnetHref,
 } from "@/lib/tracking";
-import { getToolkitProduct } from "./products";
+import { TEMPLATE_COPY, getToolkitProduct, priceAmount } from "./products";
 
 /**
  * Stub landing page for `/toolkit/:slug`, rendered from the product registry.
@@ -26,7 +26,19 @@ const ToolkitStub = () => {
   const product = getToolkitProduct(slug);
 
   if (!product) {
-    return <NotFound />;
+    // The `brand wp` wrapper is required, not decorative. Every design token
+    // (--paper, --serif, --s-*, --heat) is declared on `.brand` in
+    // Redesign.css, NotFound.css only consumes them, and `.nf-page` is
+    // `background: transparent` — so a bare <NotFound /> outside `.brand`
+    // resolves no variable and paints dark text on white. Elsewhere the app
+    // gets this ancestor from WallpaperLayout; this route deliberately does not
+    // use that layout, so it has to supply the context itself. `wp` is what
+    // carries the dark backdrop; the wallpaper canvas is not needed for it.
+    return (
+      <div className="brand wp">
+        <NotFound />
+      </div>
+    );
   }
 
   const heroPlacement = "toolkit-hero";
@@ -50,7 +62,7 @@ const ToolkitStub = () => {
           <FadeIn delay={0.2}>
             <div className="inline-flex items-baseline gap-2 text-charcoal mb-4">
               <span className="text-3xl font-semibold">
-                ${product.priceUsd}
+                {priceAmount(product)}
               </span>
               <span className="text-gray-400">{product.priceNote}</span>
             </div>
@@ -62,7 +74,7 @@ const ToolkitStub = () => {
               onClick={handleCTAClick("lead_magnet", heroPlacement)}
               className="inline-flex items-center px-10 py-5 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
             >
-              Join the waitlist
+              {TEMPLATE_COPY.heroCta}
             </a>
           </FadeIn>
         </div>
@@ -171,7 +183,7 @@ const ToolkitStub = () => {
         <div className="max-w-3xl mx-auto px-6">
           <FadeIn>
             <h2 className="font-serif text-3xl font-medium text-charcoal text-center mb-12">
-              Questions
+              {TEMPLATE_COPY.faqHeading}
             </h2>
           </FadeIn>
 
@@ -208,7 +220,7 @@ const ToolkitStub = () => {
               onClick={handleCTAClick("discovery_call", ladderPlacement)}
               className="inline-flex items-center px-10 py-5 bg-gold hover:bg-gold-dark text-white font-medium rounded-lg transition-colors text-lg"
             >
-              Schedule a Discovery Call
+              {TEMPLATE_COPY.ladderCta}
             </a>
           </FadeIn>
         </div>

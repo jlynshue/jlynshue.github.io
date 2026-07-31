@@ -174,14 +174,81 @@ export const TOOLKIT_PRODUCTS: Record<string, ToolkitProduct> = {
 };
 
 /**
+ * Copy the stub template supplies itself, with no product behind it.
+ *
+ * It lives here, in the data module, for two reasons. The copy-compliance scan
+ * walks this module, and a registry walk can never see a string that sits in
+ * JSX — so while the hero button was a literal in ToolkitStub.tsx it was the
+ * one piece of copy on the page that no rule applied to. That button is also
+ * the exact string whose first draft read "Get the field guide, instant
+ * download", which is why the stub-claim rule exists at all: the rule was
+ * gating everything except the sentence that caused it to be written.
+ *
+ * Second, the spec cannot import ToolkitStub.tsx to reach these — that pulls in
+ * Header, Footer and NotFound, and through them the whole provider stack.
+ * `site-routes.spec.ts` avoids the same weight by reading App.tsx as text.
+ */
+export const TEMPLATE_COPY = {
+  heroCta: "Join the waitlist",
+  faqHeading: "Questions",
+  ladderCta: "Schedule a Discovery Call",
+} as const;
+
+/**
+ * The price numeral as the page prints it, currency symbol attached.
+ *
+ * The template calls this rather than interpolating `product.priceUsd` itself,
+ * so the characters a reader sees exist as a string somewhere a scanner can
+ * find them.
+ *
+ * @param {ToolkitProduct} product - The product being rendered.
+ * @returns {string} e.g. "$149".
+ */
+export function priceAmount(product: ToolkitProduct): string {
+  return `$${product.priceUsd}`;
+}
+
+/**
+ * The full price line as rendered: numeral immediately followed by the note.
+ *
+ * This exists for the copy scan. `priceUsd` is a number, the scan walks string
+ * leaves only, and the money-claim pattern needs a "$149"-shaped token next to
+ * a time window — so with the numeral invisible that pattern could not match
+ * anything the page actually shows, and was dead code asserting nothing.
+ *
+ * The template renders the two parts in separate styled spans; this joins them
+ * in reading order. That is a reconstruction, so it is only as good as the two
+ * staying adjacent — worth re-checking if the hero price block is restyled.
+ *
+ * @param {ToolkitProduct} product - The product being rendered.
+ * @returns {string} e.g. "$149 when it ships · ~48 pages".
+ */
+export function renderedPriceLine(product: ToolkitProduct): string {
+  return `${priceAmount(product)} ${product.priceNote}`;
+}
+
+/**
  * Resolves a URL slug to a product.
+ *
+ * The own-property check is load-bearing, not defensive style. `slug` comes
+ * straight from the URL, and a bare `TOOLKIT_PRODUCTS[slug]` also reads the
+ * object prototype — so `/toolkit/constructor`, `/toolkit/toString`,
+ * `/toolkit/valueOf`, `/toolkit/__proto__` and `/toolkit/hasOwnProperty` all
+ * returned a truthy non-product. That passed the caller's `!product` guard and
+ * rendered a product page from `undefined` fields instead of the 404.
+ *
+ * Spelled `Object.prototype.hasOwnProperty.call` rather than `Object.hasOwn`
+ * because this project compiles against `lib: ES2020` and `Object.hasOwn` is
+ * ES2022. Vitest strips types without checking them, so the tests here pass
+ * either way and only `npm run typecheck` catches the difference.
+ *
  * @param {string | undefined} slug - The `:slug` route param.
  * @returns {ToolkitProduct | undefined} The product, or undefined for an unknown slug.
  */
 export function getToolkitProduct(
   slug: string | undefined,
 ): ToolkitProduct | undefined {
-  if (!slug) {
+  if (!slug || !Object.prototype.hasOwnProperty.call(TOOLKIT_PRODUCTS, slug)) {
     return undefined;
   }
   return TOOLKIT_PRODUCTS[slug];
