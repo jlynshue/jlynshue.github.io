@@ -13,6 +13,8 @@
  * case rather than letting it pass silently.
  */
 
+import { TOOLKIT_PRODUCTS } from "../pages/toolkit/products";
+
 export const SITE_ORIGIN = "https://jonathanlynshue.com";
 
 /** Shared social-preview image; every route reuses it unless it sets its own. */
@@ -125,8 +127,21 @@ export const LEGACY_ROUTES: SiteRoute[] = [
   },
 ];
 
-/** Every route the app prerenders — indexable and legacy alike. */
-export const ALL_ROUTES: SiteRoute[] = [...SITE_ROUTES, ...LEGACY_ROUTES];
+/**
+ * Known toolkit slugs are build-time data, so give each one a real document.
+ * They stay out of the sitemap while they are waitlist stubs, but crawlers and
+ * social previews still receive the product's own copy and canonical URL.
+ */
+export const TOOLKIT_ROUTES: SiteRoute[] = Object.values(TOOLKIT_PRODUCTS).map((product) => ({
+  path: `/toolkit/${product.slug}`,
+  title: `${product.name} — Toolkit Waitlist | Jonathan Lyn-Shue`,
+  description: `${product.subhead} Join the waitlist for the ${product.name}.`,
+  priority: 0.1,
+  indexable: false,
+}));
+
+/** Every route the app prerenders — indexable, legacy, and known toolkit stubs. */
+export const ALL_ROUTES: SiteRoute[] = [...SITE_ROUTES, ...LEGACY_ROUTES, ...TOOLKIT_ROUTES];
 
 /**
  * Parameterised routes, which cannot be prerendered from a fixed list.
@@ -147,7 +162,10 @@ export const ALL_ROUTES: SiteRoute[] = [...SITE_ROUTES, ...LEGACY_ROUTES];
  *
  * Use react-router syntax, e.g. "/toolkit/:slug".
  */
-export const DYNAMIC_ROUTE_PATTERNS: string[] = ["/toolkit/:slug"];
+export const DYNAMIC_ROUTE_PATTERNS: string[] = [];
+
+/** Dynamic router patterns whose finite values are enumerated in ALL_ROUTES. */
+export const ENUMERATED_DYNAMIC_ROUTE_PATTERNS: string[] = ["/toolkit/:slug"];
 
 /**
  * Compiles a react-router path pattern to an anchored regular-expression source.
