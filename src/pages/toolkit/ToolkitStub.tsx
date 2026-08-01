@@ -11,6 +11,7 @@ import {
 } from "@/lib/tracking";
 import {
   TEMPLATE_COPY,
+  familiesGridClass,
   getToolkitProduct,
   heroPlacement,
   ladderPlacement,
@@ -118,7 +119,7 @@ const ToolkitStub = () => {
             </h2>
           </FadeIn>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className={familiesGridClass(product)}>
             {product.families.groups.map((group, index) => (
               <FadeIn key={group.label} delay={index * 0.1}>
                 <div className="bg-gray-50 rounded-xl border border-gray-100 p-6 h-full">
