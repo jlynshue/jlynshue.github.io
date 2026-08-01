@@ -308,7 +308,7 @@ const workflowBottleneckAudit: ToolkitProduct = {
     {
       question: "How is this different from the $2,500 diagnostic?",
       answer:
-        "This is the diagnosis; the diagnostic is the diagnosis plus the prescription. You finish this knowing which constraint costs the most. You do not finish it with a target workflow design, a scoped implementation plan, or my judgment on what to do about it. If you run this and get stuck at the prescription, you are exactly who the diagnostic is for.",
+        "Two things. This is the diagnosis; the diagnostic is the diagnosis plus the prescription — you do not finish this with a target workflow design, a scoped implementation plan, or my judgment on what to do about it. And you run this yourself: the workbook is the method, so the map and the numbers are ones you produce, not ones I hand you. If you run it and get stuck at the prescription, you are exactly who the diagnostic is for.",
     },
     {
       question: "It isn’t written yet — what am I joining?",

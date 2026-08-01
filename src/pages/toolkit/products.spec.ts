@@ -238,6 +238,59 @@ describe("the sample noun belongs to the product, not to sampleLabel", () => {
   });
 });
 
+describe("the toolkit does not promise the diagnostic's prescription", () => {
+  // Cross-model review flagged that workflow-bottleneck-audit's item list contains four
+  // of the six deliverables Diagnostic.tsx lists as paid: current-state map, bottleneck
+  // analysis, systems inventory, trust/risk review.
+  //
+  // That overlap is INTENDED and is the whole shape of the offer — those four ARE "the
+  // diagnosis", and the toolkit sells the method for producing them yourself while the
+  // diagnostic delivers them as work I do. What must never overlap is the PRESCRIPTION.
+  //
+  // So this test guards the line rather than the overlap: it fails if copy drift ever
+  // starts promising the two deliverables that are deliberately withheld. Without it the
+  // boundary lives only in a vault note and an FAQ answer, either of which can be edited
+  // by someone who does not know why the wording was chosen.
+  const WITHHELD = [
+    /target workflow design/i,
+    /target state design/i,
+    /implementation recommendation/i,
+    /scoped implementation/i,
+    /implementation plan(?! ,)/i,
+    /success criteria/i,
+    /roadmap/i,
+  ];
+
+  it("never promises a target design or a scoped implementation", () => {
+    const audit = TOOLKIT_PRODUCTS["workflow-bottleneck-audit"];
+    // The FAQ legitimately NAMES these in order to say they are excluded, so the scan
+    // covers what the product claims to include — not the copy that draws the boundary.
+    const promises = [
+      ...audit.families.groups.flatMap((g) => [g.title, ...g.items]),
+      ...audit.included.items,
+      audit.included.heading,
+      audit.headline,
+      audit.subhead,
+      audit.priceKicker,
+    ].join("\n");
+
+    for (const pattern of WITHHELD) {
+      expect(
+        pattern.test(promises),
+        `workflow-bottleneck-audit promises ${pattern}, which /diagnostic sells`,
+      ).toBe(false);
+    }
+  });
+
+  it("states the exclusion somewhere a buyer will read it", () => {
+    // A boundary nobody is told about is not a boundary, it is a surprise at refund time.
+    const audit = TOOLKIT_PRODUCTS["workflow-bottleneck-audit"];
+    const faq = audit.faq.map((e) => `${e.question}\n${e.answer}`).join("\n");
+    expect(faq).toMatch(/target workflow design/i);
+    expect(faq).toMatch(/diagnostic/i);
+  });
+});
+
 describe("families grid adapts to the group count", () => {
   // Was a hardcoded `md:grid-cols-3` in the template, which made the TEMPLATE
   // impose a shape on the DATA — the copy of record for product #2 carried a
