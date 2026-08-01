@@ -7,6 +7,8 @@ import {
   ALL_ROUTES,
   SITE_ROUTES,
   DYNAMIC_ROUTE_PATTERNS,
+  ENUMERATED_DYNAMIC_ROUTE_PATTERNS,
+  TOOLKIT_ROUTES,
   allKnownPaths,
   canonicalUrl,
   routePatternToRegexSource,
@@ -32,9 +34,10 @@ describe("site route manifest", () => {
     // route can be added to the router and silently never be indexed, never
     // appear in the sitemap, and — because the server reads this manifest to
     // tell a real route from a typo — start returning 404.
-    const declared = routePathsDeclaredInApp()
+    const declaredConcrete = routePathsDeclaredInApp()
       .filter((routePath) => !routePath.includes(":"))
       .sort();
+    const declared = [...declaredConcrete, ...TOOLKIT_ROUTES.map((route) => route.path)].sort();
     const manifested = allKnownPaths().sort();
 
     expect(manifested).toEqual(declared);
@@ -48,7 +51,17 @@ describe("site route manifest", () => {
       .filter((routePath) => routePath.includes(":"))
       .sort();
 
-    expect([...DYNAMIC_ROUTE_PATTERNS].sort()).toEqual(declaredDynamic);
+    expect(
+      [...DYNAMIC_ROUTE_PATTERNS, ...ENUMERATED_DYNAMIC_ROUTE_PATTERNS].sort(),
+    ).toEqual(declaredDynamic);
+  });
+
+  it("prerenders every toolkit product and no unknown slug", async () => {
+    const { TOOLKIT_PRODUCTS } = await import("../pages/toolkit/products");
+    const manifestedSlugs = TOOLKIT_ROUTES.map((route) => route.path.replace("/toolkit/", "")).sort();
+
+    expect(manifestedSlugs).toEqual(Object.keys(TOOLKIT_PRODUCTS).sort());
+    expect(DYNAMIC_ROUTE_PATTERNS).not.toContain("/toolkit/:slug");
   });
 
   it("compiles route patterns to single-segment matchers", () => {
