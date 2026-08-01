@@ -132,9 +132,14 @@ export const ALL_ROUTES: SiteRoute[] = [...SITE_ROUTES, ...LEGACY_ROUTES];
  * Parameterised routes, which cannot be prerendered from a fixed list.
  *
  * These exist so the server still answers them with a 200. Without this list a
- * dynamic route would fall through the manifest lookup and be treated as a
- * genuine 404 — the whole feature would vanish in production while every test
- * stayed green, because no dynamic route exists to test against.
+ * dynamic route falls through the manifest lookup and is treated as a genuine
+ * 404 — the whole feature vanishes in production. Measured on the built server
+ * before `/toolkit/:slug` was added here: the response was byte-identical to
+ * `/some-random-path`, so nothing about it read as a bug rather than a typo.
+ *
+ * That is caught rather than shipped: `site-routes.spec.ts` reads App.tsx and
+ * fails when a `:param` route is declared there and missing here. Adding the
+ * route without adding the pattern is a red suite, not a silent 404.
  *
  * A route listed here is served the SPA shell and rendered client-side. It gets
  * no prerendered body and no sitemap entry; if such a route ever needs to be
@@ -142,7 +147,7 @@ export const ALL_ROUTES: SiteRoute[] = [...SITE_ROUTES, ...LEGACY_ROUTES];
  *
  * Use react-router syntax, e.g. "/toolkit/:slug".
  */
-export const DYNAMIC_ROUTE_PATTERNS: string[] = [];
+export const DYNAMIC_ROUTE_PATTERNS: string[] = ["/toolkit/:slug"];
 
 /**
  * Compiles a react-router path pattern to an anchored regular-expression source.
@@ -159,7 +164,9 @@ export function routePatternToRegexSource(pattern: string): string {
     .split("/")
     .filter((segment) => segment.length > 0)
     .map((segment) =>
-      segment.startsWith(":") ? "([^/]+)" : segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      segment.startsWith(":")
+        ? "([^/]+)"
+        : segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     )
     .join("/");
   return `^/${body}$`;
