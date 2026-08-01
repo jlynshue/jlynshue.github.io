@@ -132,7 +132,16 @@ function specificRedirectEvent(target: string): EventName {
 
 function assetIdForTarget(target: string, url: URL): string | null {
   if (target === LEAD_MAGNET_TARGET) {
-    return url.searchParams.get("asset") ?? "workflow-audit";
+    // No default. This used to fall back to "workflow-audit", which was true
+    // while LEAD_MAGNET_URL pointed at the Executive Workflow Audit form and
+    // became a lie the moment it was repointed: a bare /r/lead-magnet would
+    // send the visitor to one form while labelling the capture as a different
+    // asset, and nothing downstream could tell the label from a real one.
+    //
+    // Returning null instead means an unlabelled click is recorded as
+    // unlabelled. handleTallyWebhook then falls back to the submitted form's
+    // own id, which is a fact rather than a guess.
+    return url.searchParams.get("asset");
   }
   return null;
 }

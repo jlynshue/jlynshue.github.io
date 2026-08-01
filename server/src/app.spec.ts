@@ -119,6 +119,65 @@ describe("server app", () => {
     ]);
   });
 
+  it("carries the asset through the lead-magnet redirect and labels nothing when it is absent", async () => {
+    // /r/lead-magnet had no test at all, which is why its asset default could
+    // assert "workflow-audit" over any destination without anyone noticing.
+    const build = () => {
+      const store = new MemoryTrackingStore();
+      const app = createApp(buildConfig(staticDir), {
+        store,
+        dispatcher: { dispatch: vi.fn().mockResolvedValue(false) } as any,
+        posthog: { capture: vi.fn().mockResolvedValue(undefined) },
+        hubspot: {
+          upsertContact: vi.fn().mockResolvedValue("123"),
+          searchDealsUpdatedSince: vi.fn().mockResolvedValue([]),
+        },
+        now: () => new Date("2026-04-19T12:00:00.000Z"),
+      });
+      return { store, app };
+    };
+
+    const labelled = build();
+    const withAsset = await labelled.app.handleRequest(
+      new Request(
+        "https://jonathanlynshue.com/r/lead-magnet?asset=agent-ops-field-guide&placement=toolkit-agent-ops-field-guide-hero",
+        { headers: { accept: "text/html" } },
+      ),
+    );
+
+    expect(withAsset.status).toBe(302);
+    expect(
+      new URL(withAsset.headers.get("location") ?? "").searchParams.get(
+        "asset",
+      ),
+    ).toBe("agent-ops-field-guide");
+    expect(
+      Array.from(labelled.store.events.values()).map((event) => event.assetId),
+    ).toEqual(["agent-ops-field-guide", "agent-ops-field-guide"]);
+
+    const unlabelled = build();
+    const withoutAsset = await unlabelled.app.handleRequest(
+      new Request("https://jonathanlynshue.com/r/lead-magnet", {
+        headers: { accept: "text/html" },
+      }),
+    );
+
+    expect(withoutAsset.status).toBe(302);
+    // The discriminating half: an unlabelled click must record no asset rather
+    // than inherit whichever asset the URL used to point at.
+    for (const event of unlabelled.store.events.values()) {
+      expect(event.assetId).toBeNull();
+    }
+    // Asserted on the parsed param, not as a substring. The test fixture's
+    // leadMagnetUrl is itself "https://tally.so/r/workflow-audit", so a
+    // substring check matches the destination and cannot see the asset at all.
+    expect(
+      new URL(withoutAsset.headers.get("location") ?? "").searchParams.has(
+        "asset",
+      ),
+    ).toBe(false);
+  });
+
   it("accepts valid tally webhooks and upserts the contact", async () => {
     const store = new MemoryTrackingStore();
     const posthog = { capture: vi.fn().mockResolvedValue(undefined) };

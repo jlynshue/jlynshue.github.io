@@ -77,12 +77,19 @@ curl -v 'https://jonathanlynshue.com/r/discovery-call?placement=hero&utm_source=
 
 Redirects to the URL configured in `LEAD_MAGNET_URL` (e.g. a Tally form).
 
+⚠️ **`LEAD_MAGNET_URL` is a single global destination.** `asset` labels the
+capture; it does **not** select where the visitor lands. Every `/r/lead-magnet`
+click goes to the one configured form, whatever `asset` says. Serving a second
+lead magnet from this rail requires an `asset`-aware branch in
+`resolveRedirectTarget` (`server/src/app.ts`) — see site issue #40's sibling
+discussion in content-factory#29.
+
 **Events emitted:** `cta_clicked`, `lead_magnet_redirected`
 
 | Query Param    | Description                                          |
 | -------------- | ---------------------------------------------------- |
 | `placement`    | Identifies where the CTA was rendered                |
-| `asset`        | Lead-magnet asset identifier (default `workflow-audit`) |
+| `asset`        | Lead-magnet asset identifier. **No default** — omit it and the capture is recorded unlabelled, falling back to the submitted form's own id. It previously defaulted to `workflow-audit`, which silently mislabelled every capture once the destination changed. |
 | `utm_source`   | UTM source parameter (attribution)                   |
 | `utm_medium`   | UTM medium parameter (attribution)                   |
 | `utm_campaign` | UTM campaign parameter (attribution)                 |
@@ -101,8 +108,17 @@ Redirects to the URL configured in `LEAD_MAGNET_URL` (e.g. a Tally form).
 **Example**
 
 ```bash
-curl -v 'https://jonathanlynshue.com/r/lead-magnet?asset=workflow-audit&placement=footer'
+curl -v 'https://jonathanlynshue.com/r/lead-magnet?asset=agent-ops-field-guide&placement=toolkit-agent-ops-field-guide-hero'
 ```
+
+**The destination form must carry a hidden `jls_tracking` field.** The redirect
+appends the signed token as `?jls_tracking=<token>`; Tally maps a matching URL
+parameter into a hidden field, and `POST /webhooks/tally` reads it to recover the
+anonymous id, session, CTA and asset. Without that field the submission still
+arrives, still returns `202`, and is recorded with **no attribution at all** —
+which is indistinguishable from organic traffic. A new form also needs its own
+Tally webhook pointed at `/webhooks/tally`, signed with `TALLY_WEBHOOK_SECRET`;
+an unsigned or differently-signed webhook is rejected with `401` in production.
 
 ---
 
