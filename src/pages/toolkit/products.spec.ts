@@ -7,12 +7,13 @@ import {
   PRICE_FLOOR_USD,
   TEMPLATE_COPY,
   TOOLKIT_PRODUCTS,
+  familiesGridClass,
   getToolkitProduct,
   heroPlacement,
   ladderPlacement,
   renderedPriceLine,
+  sampleItem,
   sampleLabel,
-  sampleTrap,
   type ToolkitProduct,
 } from "./products";
 
@@ -138,7 +139,7 @@ describe("toolkit product registry", () => {
 describe("sample trap numbering", () => {
   it("points every sample at a trap that exists", () => {
     for (const [slug, product] of products) {
-      const trap = sampleTrap(product);
+      const trap = sampleItem(product);
       expect(trap, `${slug} sample does not resolve to a trap`).toBeDefined();
       expect(trap?.text.length).toBeGreaterThan(0);
     }
@@ -149,7 +150,7 @@ describe("sample trap numbering", () => {
     // "trap 03" while the sample was Family 01's FIRST item — a number written
     // by hand that disagreed with the list on the same page.
     const product = TOOLKIT_PRODUCTS["agent-ops-field-guide"];
-    const trap = sampleTrap(product);
+    const trap = sampleItem(product);
 
     expect(trap?.position).toBe(1);
     expect(trap?.text).toBe("Tests pass, feature unreachable");
@@ -158,15 +159,15 @@ describe("sample trap numbering", () => {
 
   it("counts preceding families when the sample is not in the first", () => {
     // Proves the flat numbering is actually computed rather than echoing
-    // trapItem. Families here are 5 long, so family 3 item 2 must be trap 12.
+    // the item index. Families here are 5 long, so family 3 item 2 must be trap 12.
     const product = TOOLKIT_PRODUCTS["agent-ops-field-guide"];
     const thirdFamily: ToolkitProduct = {
       ...product,
-      sample: { ...product.sample, trapFamily: 3, trapItem: 2 },
+      sample: { ...product.sample, family: 3, item: 2 },
     };
 
-    expect(sampleTrap(thirdFamily)?.position).toBe(12);
-    expect(sampleTrap(thirdFamily)?.text).toBe("A cross-review is a snapshot");
+    expect(sampleItem(thirdFamily)?.position).toBe(12);
+    expect(sampleItem(thirdFamily)?.text).toBe("A cross-review is a snapshot");
     expect(sampleLabel(thirdFamily)).toBe("Sample — trap 12");
   });
 
@@ -176,17 +177,113 @@ describe("sample trap numbering", () => {
     // fails if a real product ever lands in this state.
     const product = TOOLKIT_PRODUCTS["agent-ops-field-guide"];
     for (const bad of [
-      { trapFamily: 9, trapItem: 1 },
-      { trapFamily: 1, trapItem: 99 },
-      { trapFamily: 0, trapItem: 1 },
+      { family: 9, item: 1 },
+      { family: 1, item: 99 },
+      { family: 0, item: 1 },
     ]) {
       const broken: ToolkitProduct = {
         ...product,
         sample: { ...product.sample, ...bad },
       };
-      expect(sampleTrap(broken), JSON.stringify(bad)).toBeUndefined();
+      expect(sampleItem(broken), JSON.stringify(bad)).toBeUndefined();
       expect(sampleLabel(broken)).toBe("Sample");
     }
+  });
+});
+
+describe("the sample noun belongs to the product, not to sampleLabel", () => {
+  // The gap this closes: every assertion above is about product #1, and every
+  // one of them was STILL CORRECT while `sampleLabel` hardcoded the word "trap".
+  // A second product rendered "Sample — trap 06" over a workflow step and the
+  // whole suite stayed green, because nothing asserted the noun belonged to the
+  // product rather than to the function. These tests are that assertion.
+
+  it("prints each product's own noun", () => {
+    expect(sampleLabel(TOOLKIT_PRODUCTS["agent-ops-field-guide"])).toBe(
+      "Sample — trap 01",
+    );
+    // THE ONE THAT WOULD HAVE CAUGHT IT. Under the old code this read
+    // "Sample — trap 06".
+    expect(sampleLabel(TOOLKIT_PRODUCTS["workflow-bottleneck-audit"])).toBe(
+      "Sample — step 06",
+    );
+  });
+
+  it("follows itemNoun rather than any fixed word", () => {
+    // Discriminating: change ONLY the noun and the label must change with it.
+    // Passes trivially if the noun is read from the product; fails if any word
+    // is baked into sampleLabel, whatever that word happens to be.
+    const product = TOOLKIT_PRODUCTS["agent-ops-field-guide"];
+    const renamed: ToolkitProduct = { ...product, itemNoun: "check" };
+    expect(sampleLabel(renamed)).toBe("Sample — check 01");
+    expect(sampleLabel(renamed)).not.toContain("trap");
+  });
+
+  it("gives every product a non-empty singular noun", () => {
+    for (const [slug, product] of products) {
+      expect(product.itemNoun, `${slug} has no itemNoun`).toBeTruthy();
+      expect(product.itemNoun.trim(), `${slug} itemNoun is blank`).not.toBe("");
+      // Singular. "Sample — steps 06" reads as a typo on a page selling rigour.
+      expect(product.itemNoun.endsWith("s"), `${slug} itemNoun looks plural`).toBe(
+        false,
+      );
+    }
+  });
+
+  it("does not reuse product #1's noun for every product", () => {
+    // Weak on its own, but it is the assertion whose absence allowed the defect:
+    // it fails the moment a second product silently inherits "trap".
+    const nouns = new Set([...products].map(([, p]) => p.itemNoun));
+    expect(nouns.size).toBeGreaterThan(1);
+  });
+});
+
+describe("families grid adapts to the group count", () => {
+  // Was a hardcoded `md:grid-cols-3` in the template, which made the TEMPLATE
+  // impose a shape on the DATA — the copy of record for product #2 carried a
+  // note telling its author to write exactly three groups so a fourth card
+  // would not wrap onto a lonely second row. Found by cross-model review.
+
+  const base = TOOLKIT_PRODUCTS["agent-ops-field-guide"];
+  const withGroups = (n: number): ToolkitProduct => ({
+    ...base,
+    families: {
+      ...base.families,
+      groups: base.families.groups.slice(0, 1).concat(
+        Array.from({ length: Math.max(0, n - 1) }, (_, i) => ({
+          label: `Family 0${i + 2}`,
+          title: `Group ${i + 2}`,
+          items: ["a", "b"],
+        })),
+      ),
+    },
+  });
+
+  it("uses three columns for three groups", () => {
+    expect(familiesGridClass(withGroups(3))).toContain("md:grid-cols-3");
+  });
+
+  it("uses two columns for two groups", () => {
+    expect(familiesGridClass(withGroups(2))).toContain("md:grid-cols-2");
+  });
+
+  it("balances four groups into 2x2 rather than 3+1", () => {
+    expect(familiesGridClass(withGroups(4))).toContain("md:grid-cols-2");
+    expect(familiesGridClass(withGroups(4))).not.toContain("md:grid-cols-3");
+  });
+
+  it("does not add a column class for a single group", () => {
+    expect(familiesGridClass(withGroups(1))).not.toContain("md:grid-cols");
+  });
+
+  it("is what the template actually calls", () => {
+    // The function existing is not the same as the template using it — the whole
+    // reason the hardcoded class survived review is that it looked like markup.
+    const source = templateSourceWithoutComments();
+    expect(source).toContain("familiesGridClass(product)");
+    expect(source, "a hardcoded grid class is back in the template").not.toMatch(
+      /className="grid grid-cols-1 md:grid-cols-\d/,
+    );
   });
 });
 
