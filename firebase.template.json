@@ -11,9 +11,20 @@
             "value": "public,max-age=31536000,immutable"
           }
         ]
+      },
+      {
+        "source": "/sheila/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=300"
+          }
+        ]
       }
     ],
     "rewrites": [
+      { "source": "__PRERENDERED_ROUTES__" },
+      { "source": "__SHEILA_ROUTES__" },
       {
         "source": "/r/**",
         "run": {
@@ -36,21 +47,7 @@
         }
       },
       {
-        "source": "/sheila",
-        "run": {
-          "serviceId": "sheila-api",
-          "region": "__CLOUD_RUN_REGION__"
-        }
-      },
-      {
-        "source": "/sheila/**",
-        "run": {
-          "serviceId": "sheila-api",
-          "region": "__CLOUD_RUN_REGION__"
-        }
-      },
-      {
-        "source": "**",
+        "source": "__CATCH_ALL__",
         "run": {
           "serviceId": "__CLOUD_RUN_SERVICE_ID__",
           "region": "__CLOUD_RUN_REGION__"

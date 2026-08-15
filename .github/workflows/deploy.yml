@@ -12,7 +12,11 @@ permissions:
   pull-requests: write
 
 env:
-  NODE_VERSION: "20"
+  # 22, not 20: scripts/render-firebase-config.mjs uses path.matchesGlob to
+  # verify hosting.ignore does not exclude the files it validated, and that API
+  # does not exist before Node 22. The script fails closed without it rather
+  # than skipping the check, so on Node 20 the config step would refuse to run.
+  NODE_VERSION: "22"
 
 jobs:
   verify:
