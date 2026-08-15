@@ -260,6 +260,54 @@ await assertPublishedFile("Sheila rewrite destination", SHEILA_DESTINATION);
  */
 const MARKERS = ["__PRERENDERED_ROUTES__", "__SHEILA_ROUTES__", "__CATCH_ALL__"];
 
+if (typeof config.hosting !== "object" || config.hosting === null || !Array.isArray(config.hosting.rewrites)) {
+  fail(`${templatePath} must declare hosting.rewrites as an array.`);
+}
+
+/**
+ * Validate a rewrite that came from the template rather than being generated
+ * here.
+ *
+ * These used to pass straight through the switch's `default:` branch. That left
+ * one last instance of the defect this whole file guards against: a template
+ * entry like `{ "source": "/about", "destination": "/missing.html" }` was
+ * emitted verbatim, and the config deployed cleanly with /about serving a
+ * rewrite to a file that does not exist. Measured before this guard.
+ *
+ * Generated rewrites are validated at the point they are built; this closes the
+ * other door.
+ */
+async function assertTemplateRewrite(rewrite) {
+  const where = `${templatePath} rewrite ${JSON.stringify(rewrite.source)}`;
+  if (typeof rewrite !== "object" || rewrite === null) {
+    fail(`${templatePath} contains a rewrite that is not an object: ${JSON.stringify(rewrite)}.`);
+  }
+  // Firebase source globs ("/r/**") are already canonical under normalize, so
+  // the same check applies to them.
+  assertCanonicalPath(`${where} source`, rewrite.source);
+
+  const hasDestination = "destination" in rewrite;
+  const hasRun = "run" in rewrite;
+  if (hasDestination === hasRun) {
+    fail(`${where} must have exactly one of "destination" or "run"; got ${JSON.stringify(Object.keys(rewrite))}.`);
+  }
+
+  if (hasDestination) {
+    await assertPublishedFile(`${where} destination`, rewrite.destination);
+    return;
+  }
+
+  const run = rewrite.run;
+  if (typeof run !== "object" || run === null) {
+    fail(`${where} has a run target that is not an object: ${JSON.stringify(run)}.`);
+  }
+  for (const field of ["serviceId", "region"]) {
+    if (typeof run[field] !== "string" || run[field].trim().length === 0) {
+      fail(`${where} run.${field} must be a non-empty string; got ${JSON.stringify(run[field])}.`);
+    }
+  }
+}
+
 const templateSources = config.hosting.rewrites.map((rewrite) => rewrite.source);
 for (const marker of MARKERS) {
   const seen = templateSources.filter((source) => source === marker).length;
@@ -291,9 +339,17 @@ for (const rewrite of config.hosting.rewrites) {
       // With static fallback on there is no catch-all: anything unmatched falls
       // to Hosting's own 404 handling (dist/404.html), so a missing page reads
       // as an honest 404 rather than a 503 server error.
-      if (!staticFallback) expanded.push({ ...rewrite, source: "**" });
+      //
+      // The marker object carries the run block that will be emitted, so it is
+      // validated with the same rules as any other template rewrite — the
+      // source is replaced afterwards, and "**" is not a canonical path.
+      if (!staticFallback) {
+        await assertTemplateRewrite({ ...rewrite, source: "/__catch_all__" });
+        expanded.push({ ...rewrite, source: "**" });
+      }
       break;
     default:
+      await assertTemplateRewrite(rewrite);
       expanded.push(rewrite);
   }
 }
