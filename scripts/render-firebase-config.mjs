@@ -7,9 +7,21 @@ const [templatePath = "firebase.template.json", outputPath = "firebase.generated
 const serviceId = process.env.FIREBASE_CLOUD_RUN_SERVICE_ID;
 const region = process.env.FIREBASE_CLOUD_RUN_REGION;
 
-if (!serviceId || !region) {
-  console.error("FIREBASE_CLOUD_RUN_SERVICE_ID and FIREBASE_CLOUD_RUN_REGION are required.");
+/**
+ * Abort without writing anything.
+ *
+ * Every validation in this file must end here rather than degrading to a
+ * partial config. A config that renders successfully but omits routes deploys
+ * cleanly and 404s real pages — the build looks green and only a visitor finds
+ * out. Refusing to write is the whole point.
+ */
+function fail(message) {
+  console.error(message);
   process.exit(1);
+}
+
+if (!serviceId || !region) {
+  fail("FIREBASE_CLOUD_RUN_SERVICE_ID and FIREBASE_CLOUD_RUN_REGION are required.");
 }
 
 /**
@@ -47,11 +59,22 @@ const config = JSON.parse(
  * serves.
  */
 const publicRoot = config.hosting?.public;
-if (typeof publicRoot !== "string" || publicRoot.length === 0) {
-  console.error(
-    `${templatePath} must declare a non-empty hosting.public directory; got ${JSON.stringify(publicRoot)}.`,
+if (typeof publicRoot !== "string" || publicRoot.trim().length === 0) {
+  fail(`${templatePath} must declare a non-empty hosting.public directory; got ${JSON.stringify(publicRoot)}.`);
+}
+// A non-empty string is not enough. ".", "/", "../.." and backslash paths are
+// all non-empty, and each would point the existence check at a directory
+// Firebase will not publish — so the check would pass against files nobody
+// serves, which is the exact failure this validation exists to prevent.
+if (
+  path.posix.isAbsolute(publicRoot) ||
+  publicRoot.includes("\\") ||
+  publicRoot.split("/").some((segment) => segment === "." || segment === "..")
+) {
+  fail(
+    `hosting.public must be a relative path below the project root with no "." or ".." segments; ` +
+      `got ${JSON.stringify(publicRoot)}.`,
   );
-  process.exit(1);
 }
 
 /**
@@ -68,12 +91,11 @@ async function prerenderedRewrites() {
     // Fail loudly. Falling back to "no static routes" would emit a config that
     // deploys cleanly and 404s every page — a broken site that looks like a
     // successful build.
-    console.error(
+    fail(
       `Static fallback is enabled but the route manifest could not be read at ${manifestPath}.\n` +
         `Run \`npm run build\` before rendering the Firebase config, or set FIREBASE_STATIC_FALLBACK=0.\n` +
         `Cause: ${error.message}`,
     );
-    process.exit(1);
   }
 
   // Client-side dynamic routes (e.g. "/post/:slug") cannot be satisfied by a
@@ -84,39 +106,77 @@ async function prerenderedRewrites() {
   //
   // Empty today. This guard exists so that adding the first dynamic route
   // fails the build instead of silently shipping broken deep links.
+  // Check the TYPE, not just the length. `{}.length` is undefined and
+  // `undefined > 0` is false, so a malformed manifest whose dynamicPatterns is
+  // an object — or a number, or null-ish garbage — sailed straight through a
+  // length-only test. A guard that silently accepts the malformed case is worse
+  // than no guard, because it reads as protection.
   const dynamicPatterns = manifest.dynamicPatterns ?? [];
+  if (!Array.isArray(dynamicPatterns)) {
+    fail(
+      `${manifestPath} has a dynamicPatterns field that is not an array ` +
+        `(${JSON.stringify(dynamicPatterns)}). Refusing to guess whether it declares dynamic routes.`,
+    );
+  }
   if (dynamicPatterns.length > 0) {
-    console.error(
+    fail(
       `Static fallback cannot serve the ${dynamicPatterns.length} dynamic route pattern(s) in ` +
-        `${manifestPath}: ${dynamicPatterns.join(", ")}.\n` +
+        `${manifestPath}: ${dynamicPatterns.map((p) => JSON.stringify(p)).join(", ")}.\n` +
         `With no catch-all rewrite, deep links matching these would 404. Either emit explicit ` +
         `rewrites for them here, or set FIREBASE_STATIC_FALLBACK=0 to restore the catch-all.`,
     );
-    process.exit(1);
   }
 
+  // Same reasoning: a string or an array here would survive `Object.entries`
+  // and produce nonsense route pairs rather than an error.
   const documents = manifest.documents ?? {};
+  if (typeof documents !== "object" || documents === null || Array.isArray(documents)) {
+    fail(`${manifestPath} has a documents field that is not an object (${JSON.stringify(documents)}).`);
+  }
+
   const rewrites = [];
+  const publicRootResolved = path.resolve(publicRoot);
 
   for (const [route, document] of Object.entries(documents)) {
+    if (typeof route !== "string" || typeof document !== "string" || document.length === 0) {
+      fail(`${manifestPath} maps ${JSON.stringify(route)} to ${JSON.stringify(document)}; both must be strings.`);
+    }
+
     // "/" is served by <publicRoot>/index.html as a real file, so Hosting
     // already resolves it without a rewrite.
     if (route === "/") continue;
 
+    // A document must be a rooted path inside the published directory. Without
+    // this, "/../package.json" joins to "package.json", which EXISTS — so the
+    // existence check passes and a rewrite is emitted pointing at a file
+    // Firebase will never deploy. Verified: it emitted
+    // `{source: "/evil", destination: "/../package.json"}` before this guard.
+    if (!document.startsWith("/") || document.split("/").includes("..")) {
+      fail(
+        `Route ${route} points at ${JSON.stringify(document)}, which must be an absolute path ` +
+          `inside ${publicRoot} with no ".." segments.`,
+      );
+    }
+
     const target = path.posix.join(publicRoot, document.replace(/^\//, ""));
+    // Belt and braces: confirm the resolved file really is under the published
+    // root, so any escape this misses still cannot produce a rewrite.
+    const targetResolved = path.resolve(target);
+    if (targetResolved !== publicRootResolved && !targetResolved.startsWith(publicRootResolved + path.sep)) {
+      fail(`Route ${route} resolves to ${targetResolved}, which is outside the published directory ${publicRoot}.`);
+    }
+
     try {
       await fs.access(target);
     } catch {
-      console.error(`Route ${route} points at ${document}, which is missing from the build.`);
-      process.exit(1);
+      fail(`Route ${route} points at ${document}, which is missing from the build.`);
     }
 
     rewrites.push({ source: route, destination: document });
   }
 
   if (rewrites.length === 0) {
-    console.error(`Route manifest at ${manifestPath} declared no routes to serve.`);
-    process.exit(1);
+    fail(`Route manifest at ${manifestPath} declared no routes to serve.`);
   }
 
   return rewrites;
