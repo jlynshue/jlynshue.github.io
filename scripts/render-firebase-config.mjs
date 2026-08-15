@@ -141,20 +141,42 @@ async function prerenderedRewrites() {
     if (typeof route !== "string" || typeof document !== "string" || document.length === 0) {
       fail(`${manifestPath} maps ${JSON.stringify(route)} to ${JSON.stringify(document)}; both must be strings.`);
     }
+    // The route becomes a Hosting rewrite `source`. Keys like "__proto__" or
+    // "constructor" are own enumerable properties here, so they do not pollute
+    // anything — but they would emit a meaningless rewrite, and a source that
+    // is not a rooted path is never what the manifest meant.
+    if (!route.startsWith("/")) {
+      fail(`${manifestPath} declares route ${JSON.stringify(route)}, which must start with "/".`);
+    }
 
     // "/" is served by <publicRoot>/index.html as a real file, so Hosting
     // already resolves it without a rewrite.
     if (route === "/") continue;
 
-    // A document must be a rooted path inside the published directory. Without
-    // this, "/../package.json" joins to "package.json", which EXISTS — so the
-    // existence check passes and a rewrite is emitted pointing at a file
-    // Firebase will never deploy. Verified: it emitted
-    // `{source: "/evil", destination: "/../package.json"}` before this guard.
-    if (!document.startsWith("/") || document.split("/").includes("..")) {
+    // A document must be a rooted, CANONICAL path inside the published
+    // directory.
+    //
+    // Requiring canonical form rather than blacklisting traversal spellings is
+    // deliberate. The bug this replaces was "validate one string, emit a
+    // different one": the check ran against the joined filesystem `target`
+    // while the rewrite emitted the raw `document`, so any path that normalised
+    // onto a real file shipped verbatim. Measured before this guard —
+    // "//evil" and "/./probe/x" both passed and were emitted unchanged, and
+    // "//evil" is a protocol-relative URL, not a site path.
+    //
+    // path.posix.normalize collapses "//", "/./" and "/../" alike, so one
+    // equality test closes the whole class instead of a list of spellings that
+    // will always be missing an entry.
+    if (
+      !document.startsWith("/") ||
+      document.endsWith("/") ||
+      document.includes("\\") ||
+      document !== path.posix.normalize(document)
+    ) {
       fail(
-        `Route ${route} points at ${JSON.stringify(document)}, which must be an absolute path ` +
-          `inside ${publicRoot} with no ".." segments.`,
+        `Route ${route} points at ${JSON.stringify(document)}, which must be a canonical absolute ` +
+          `path to a file inside ${publicRoot} — no "//", "/./", ".." segments, backslashes, or ` +
+          `trailing slash. Canonical form would be ${JSON.stringify(path.posix.normalize(document))}.`,
       );
     }
 
