@@ -77,6 +77,60 @@ if (
   );
 }
 
+const publicRootResolved = path.resolve(publicRoot);
+
+/**
+ * A rewrite source or destination must be a canonical, rooted path.
+ *
+ * Canonical form rather than a blacklist of traversal spellings: normalize
+ * collapses "//", "/./" and "/../" alike, so one equality test closes the class
+ * instead of a list that is always one entry short.
+ */
+function assertCanonicalPath(what, value, { allowTrailingSlash = false } = {}) {
+  if (typeof value !== "string" || value.length === 0) {
+    fail(`${what} must be a non-empty string; got ${JSON.stringify(value)}.`);
+  }
+  if (
+    !value.startsWith("/") ||
+    value.includes("\\") ||
+    (!allowTrailingSlash && value.length > 1 && value.endsWith("/")) ||
+    value !== path.posix.normalize(value)
+  ) {
+    fail(
+      `${what} must be a canonical absolute path — no "//", "/./", ".." segments, backslashes or ` +
+        `trailing slash. Got ${JSON.stringify(value)}; canonical form is ` +
+        `${JSON.stringify(path.posix.normalize(value))}.`,
+    );
+  }
+}
+
+/**
+ * Validate a static rewrite destination and confirm the file is really in the
+ * published directory.
+ *
+ * EVERY static destination goes through here, whether it came from the route
+ * manifest or is hardcoded in this file. The hardcoded /sheila destination was
+ * previously exempt, so if the build stopped copying dist/sheila/index.html the
+ * generator still wrote a config that deployed cleanly and rewrote every Sheila
+ * route to a missing document. A validator that only covers the inputs you
+ * remembered is the same blind spot in a new place.
+ */
+async function assertPublishedFile(what, destination) {
+  assertCanonicalPath(what, destination);
+
+  const target = path.posix.join(publicRoot, destination.replace(/^\//, ""));
+  const targetResolved = path.resolve(target);
+  if (targetResolved !== publicRootResolved && !targetResolved.startsWith(publicRootResolved + path.sep)) {
+    fail(`${what} resolves to ${targetResolved}, which is outside the published directory ${publicRoot}.`);
+  }
+
+  try {
+    await fs.access(target);
+  } catch {
+    fail(`${what} points at ${destination}, which is missing from the build (looked for ${target}).`);
+  }
+}
+
 /**
  * Build one static rewrite per prerendered route, read from the build's own
  * route manifest. Deriving them here rather than hardcoding a second list is
@@ -135,64 +189,20 @@ async function prerenderedRewrites() {
   }
 
   const rewrites = [];
-  const publicRootResolved = path.resolve(publicRoot);
 
   for (const [route, document] of Object.entries(documents)) {
-    if (typeof route !== "string" || typeof document !== "string" || document.length === 0) {
-      fail(`${manifestPath} maps ${JSON.stringify(route)} to ${JSON.stringify(document)}; both must be strings.`);
-    }
-    // The route becomes a Hosting rewrite `source`. Keys like "__proto__" or
-    // "constructor" are own enumerable properties here, so they do not pollute
-    // anything — but they would emit a meaningless rewrite, and a source that
-    // is not a rooted path is never what the manifest meant.
-    if (!route.startsWith("/")) {
-      fail(`${manifestPath} declares route ${JSON.stringify(route)}, which must start with "/".`);
-    }
+    // The route becomes a Hosting rewrite `source`, so it gets the same
+    // canonical treatment as a destination — it was previously only checked for
+    // a leading slash and then emitted raw, which let "//evil" and "/./work"
+    // through. Keys like "__proto__" are own enumerable properties here and do
+    // not pollute anything, but they are not routes either.
+    assertCanonicalPath(`${manifestPath} route ${JSON.stringify(route)}`, route, { allowTrailingSlash: false });
 
     // "/" is served by <publicRoot>/index.html as a real file, so Hosting
     // already resolves it without a rewrite.
     if (route === "/") continue;
 
-    // A document must be a rooted, CANONICAL path inside the published
-    // directory.
-    //
-    // Requiring canonical form rather than blacklisting traversal spellings is
-    // deliberate. The bug this replaces was "validate one string, emit a
-    // different one": the check ran against the joined filesystem `target`
-    // while the rewrite emitted the raw `document`, so any path that normalised
-    // onto a real file shipped verbatim. Measured before this guard —
-    // "//evil" and "/./probe/x" both passed and were emitted unchanged, and
-    // "//evil" is a protocol-relative URL, not a site path.
-    //
-    // path.posix.normalize collapses "//", "/./" and "/../" alike, so one
-    // equality test closes the whole class instead of a list of spellings that
-    // will always be missing an entry.
-    if (
-      !document.startsWith("/") ||
-      document.endsWith("/") ||
-      document.includes("\\") ||
-      document !== path.posix.normalize(document)
-    ) {
-      fail(
-        `Route ${route} points at ${JSON.stringify(document)}, which must be a canonical absolute ` +
-          `path to a file inside ${publicRoot} — no "//", "/./", ".." segments, backslashes, or ` +
-          `trailing slash. Canonical form would be ${JSON.stringify(path.posix.normalize(document))}.`,
-      );
-    }
-
-    const target = path.posix.join(publicRoot, document.replace(/^\//, ""));
-    // Belt and braces: confirm the resolved file really is under the published
-    // root, so any escape this misses still cannot produce a rewrite.
-    const targetResolved = path.resolve(target);
-    if (targetResolved !== publicRootResolved && !targetResolved.startsWith(publicRootResolved + path.sep)) {
-      fail(`Route ${route} resolves to ${targetResolved}, which is outside the published directory ${publicRoot}.`);
-    }
-
-    try {
-      await fs.access(target);
-    } catch {
-      fail(`Route ${route} points at ${document}, which is missing from the build.`);
-    }
+    await assertPublishedFile(`Route ${route} destination`, document);
 
     rewrites.push({ source: route, destination: document });
   }
@@ -226,10 +236,47 @@ async function prerenderedRewrites() {
  * wherever the app is hosted, so moving the app again touches one HTML file
  * rather than this config.
  */
+const SHEILA_DESTINATION = "/sheila/index.html";
 const sheilaRewrites = [
-  { source: "/sheila", destination: "/sheila/index.html" },
-  { source: "/sheila/**", destination: "/sheila/index.html" },
+  { source: "/sheila", destination: SHEILA_DESTINATION },
+  { source: "/sheila/**", destination: SHEILA_DESTINATION },
 ];
+// Hardcoded here, but NOT exempt from validation — see assertPublishedFile.
+await assertPublishedFile("Sheila rewrite destination", SHEILA_DESTINATION);
+
+/**
+ * Every marker this script knows how to expand, and whether the template is
+ * required to contain it.
+ *
+ * Markers are validated BEFORE expansion because expansion is driven by finding
+ * them: `prerenderedRewrites()` only ran when a rewrite whose source equalled
+ * "__PRERENDERED_ROUTES__" was found, so deleting or misspelling that one line
+ * in the template produced a config with ZERO prerendered rewrites that still
+ * rendered, still deployed, and 404'd every page on the site. Measured: 0
+ * rewrites emitted where 10 were expected.
+ *
+ * That is the original outage reachable through a typo, so the template's shape
+ * is now an assertion rather than an assumption.
+ */
+const MARKERS = ["__PRERENDERED_ROUTES__", "__SHEILA_ROUTES__", "__CATCH_ALL__"];
+
+const templateSources = config.hosting.rewrites.map((rewrite) => rewrite.source);
+for (const marker of MARKERS) {
+  const seen = templateSources.filter((source) => source === marker).length;
+  if (seen !== 1) {
+    fail(
+      `${templatePath} must contain exactly one ${marker} rewrite; found ${seen}. ` +
+        `Without it the generated config silently omits the routes it stands for.`,
+    );
+  }
+}
+// An unknown __MARKER__ is a typo that would otherwise be emitted verbatim as a
+// literal rewrite source and match nothing.
+for (const source of templateSources) {
+  if (typeof source === "string" && /^__.*__$/.test(source) && !MARKERS.includes(source)) {
+    fail(`${templatePath} contains an unrecognised marker rewrite source ${JSON.stringify(source)}.`);
+  }
+}
 
 const expanded = [];
 for (const rewrite of config.hosting.rewrites) {
