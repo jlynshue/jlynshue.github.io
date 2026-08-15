@@ -355,6 +355,48 @@ for (const rewrite of config.hosting.rewrites) {
 }
 config.hosting.rewrites = expanded;
 
+/**
+ * Every file this script proved exists must actually be uploaded.
+ *
+ * `hosting.ignore` was previously copied from the template unvalidated, on the
+ * reasoning that only `rewrites` and `public` could break the site. That was
+ * wrong: `ignore: ["**\/*"]` excludes everything from the upload, so the
+ * generator validates files in the published directory and Firebase then ships
+ * none of them. The config deploys cleanly and every page 404s — the exact
+ * failure this file exists to prevent, arrived at from the one direction the
+ * existence checks cannot see.
+ *
+ * So the invariant is not "the file exists locally", it is "the file exists
+ * locally AND survives the ignore list".
+ */
+const ignorePatterns = config.hosting.ignore ?? [];
+if (!Array.isArray(ignorePatterns) || ignorePatterns.some((pattern) => typeof pattern !== "string")) {
+  fail(`${templatePath} hosting.ignore must be an array of strings; got ${JSON.stringify(ignorePatterns)}.`);
+}
+
+// Fail closed rather than skip. A version-gated check that silently does
+// nothing on the CI runner is worse than no check, because the build stays
+// green while the guarantee is absent. path.matchesGlob is Node >= 22.
+if (typeof path.matchesGlob !== "function") {
+  fail(
+    `This script needs Node >= 22 for path.matchesGlob to verify that hosting.ignore does not ` +
+      `exclude the files it just validated. Running ${process.version}.`,
+  );
+}
+
+for (const rewrite of expanded) {
+  if (typeof rewrite.destination !== "string") continue;
+  const uploadPath = path.posix.join(publicRoot, rewrite.destination.replace(/^\//, ""));
+  const excludedBy = ignorePatterns.find((pattern) => path.matchesGlob(uploadPath, pattern));
+  if (excludedBy) {
+    fail(
+      `Rewrite ${rewrite.source} points at ${rewrite.destination}, but hosting.ignore pattern ` +
+        `${JSON.stringify(excludedBy)} excludes ${uploadPath} from the upload. The file exists ` +
+        `locally and would not be deployed, so the route would 404 on a config that deploys cleanly.`,
+    );
+  }
+}
+
 await fs.writeFile(outputPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 
 console.log(
