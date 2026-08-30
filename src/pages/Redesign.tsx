@@ -308,7 +308,7 @@ const Redesign = () => {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
             gap: "var(--s-5)",
           }}
         >
