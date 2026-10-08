@@ -21,8 +21,11 @@ env:
   # PERMISSION_DENIED ("requires billing to be enabled"), and that failure used to stop
   # the Hosting deploy too. With "false", only the static Hosting site deploys; the
   # Cloud Run rewrites keep pointing at the existing production service, so the
-  # server routes (/r/*, /api/*) come back as soon as billing does. Set to "true"
-  # after billing is restored.
+  # server routes (/r/*, /api/*) come back as soon as billing does. While it is
+  # "false", render-firebase-config.mjs also redirects /r/discovery-call ("Schedule a
+  # Call") straight to the booking page, because the tracked redirect needs Cloud Run.
+  # Set to "true" after billing is restored, and point the DISCOVERY_CALL_URL secret at
+  # the same booking page first.
   DEPLOY_CLOUD_RUN: "false"
 
 jobs:
