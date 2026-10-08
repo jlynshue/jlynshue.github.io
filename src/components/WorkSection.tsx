@@ -8,26 +8,26 @@ const engagements = [
     title: "Real-Time Perception System for QSR",
     badge: "Edge AI · Governance",
     description:
-      "Designed and governed the engineering infrastructure for a real-time computer vision pipeline delivering sub-300ms recognition-to-prediction loops across edge-deployed drive-through systems.",
+      "Delivery lead for the edge computer-vision order-accuracy program: YOLO detection with BoT-SORT tracking, zone and temporal validation, and TensorRT export on NVIDIA Jetson.",
     outcomes: [
-      "Sub-300ms end-to-end processing loop",
-      "+2 cars/hour throughput improvement",
-      "100% uptime during October 2025 AWS outage",
+      "Set the production bar: event schema, acceptance test and merge gate",
+      "Recall-at-fixed-precision target for order-accuracy detection",
+      "Edge inference pipeline built for NVIDIA Jetson",
     ],
-    systems: "NVIDIA Jetson · Private LTE · AWS · Custom ML Pipeline",
+    systems: "NVIDIA Jetson · YOLO · BoT-SORT · TensorRT",
   },
   {
     number: "02",
     title: "Enterprise Data Architecture — Stellantis",
     badge: "Analytics · Governance",
     description:
-      "Led data instrumentation, architecture, and product development for Stellantis. Managed CRM and Data Science pods, built analytics governance frameworks across a multi-brand enterprise ecosystem.",
+      "Directed BI, web analytics, data science, CRM, and media architecture for Stellantis across 16 automotive brands in North America and Europe.",
     outcomes: [
-      "Unified analytics governance across 14 brands",
-      "First-party data strategy driving $50M+ in attributable media spend",
+      "Analytics architecture across 16 automotive brands",
+      "Stewarded the cross-agency product roadmap and analytics-request intake",
       "Cross-functional alignment between engineering, analytics, and marketing",
     ],
-    systems: "Adobe Analytics · Salesforce · Snowflake · Tealium",
+    systems: "Adobe Analytics · Salesforce · Tealium",
   },
   {
     number: "03",
@@ -36,7 +36,7 @@ const engagements = [
     description:
       "Built executive reporting and coordination workflows across fragmented tool stacks — reducing manual status assembly and improving decision-making speed for operations teams.",
     outcomes: [
-      "50%+ reduction in manual reporting prep time",
+      "Source-attributed, auditable outputs replacing manual reporting",
       "Source-linked outputs trusted by leadership",
       "Reusable workflow patterns across multiple teams",
     ],

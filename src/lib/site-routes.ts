@@ -50,7 +50,7 @@ export const SITE_ROUTES: SiteRoute[] = [
     path: "/work",
     title: "Work — Engagements & Outcomes | Jonathan Lyn-Shue",
     description:
-      "Selected engagements and measurable outcomes: enterprise data platform strategy across 16 automotive brands, a B2B commerce platform scaled from $100M to $1.4B+, and edge-AI infrastructure for physical operations.",
+      "Selected engagements: analytics architecture across 16 automotive brands, a data-pipeline method a national distributor adopted as its standard practice, and edge-AI infrastructure for physical operations.",
     priority: 0.9,
     indexable: true,
   },
