@@ -397,8 +397,42 @@ for (const rewrite of expanded) {
   }
 }
 
+/**
+ * "Schedule a Call" while Cloud Run is not deployed.
+ *
+ * `/r/discovery-call` is a tracking redirect served by Cloud Run. With
+ * DEPLOY_CLOUD_RUN off (GCP billing disabled) the `/r/**` rewrite reaches no
+ * running service, so every "Schedule a Call" button — nav, home CTA, About,
+ * footer, /sprint — answered 500. Measured on production after #44 merged.
+ *
+ * Hosting evaluates redirects before static files and rewrites, so this entry
+ * answers the route itself and needs no compute. It is emitted only while Cloud
+ * Run is off: with DEPLOY_CLOUD_RUN="true" it would shadow the tracked redirect,
+ * so it steps aside and the server's DISCOVERY_CALL_URL takes over again — point
+ * that secret at the same booking page before flipping the switch.
+ */
+const DISCOVERY_CALL_FALLBACK_URL = "https://calendly.com/jonathan-lynshue-anubatechnologies/30min";
+const deployCloudRun = process.env.DEPLOY_CLOUD_RUN === "true";
+
+const redirects = config.hosting.redirects ?? [];
+if (!Array.isArray(redirects)) {
+  fail(`${templatePath} hosting.redirects must be an array; got ${JSON.stringify(redirects)}.`);
+}
+if (!deployCloudRun) {
+  // An absolute https URL, or Hosting would treat it as a path on this site.
+  if (new URL(DISCOVERY_CALL_FALLBACK_URL).protocol !== "https:") {
+    fail(`DISCOVERY_CALL_FALLBACK_URL must be an https URL; got ${DISCOVERY_CALL_FALLBACK_URL}.`);
+  }
+  if (redirects.some((redirect) => redirect?.source === "/r/discovery-call")) {
+    fail(`${templatePath} already redirects /r/discovery-call; remove it or this fallback, not both.`);
+  }
+  redirects.push({ source: "/r/discovery-call", destination: DISCOVERY_CALL_FALLBACK_URL, type: 302 });
+}
+if (redirects.length > 0) config.hosting.redirects = redirects;
+
 await fs.writeFile(outputPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 
 console.log(
-  `Wrote ${outputPath} — static fallback ${staticFallback ? "ON" : "OFF"}, ${expanded.length} rewrites.`,
+  `Wrote ${outputPath} — static fallback ${staticFallback ? "ON" : "OFF"}, ${expanded.length} rewrites, ` +
+    `${redirects.length} redirects (Cloud Run ${deployCloudRun ? "deployed" : "off"}).`,
 );
