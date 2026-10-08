@@ -180,10 +180,10 @@ const About = () => {
             <div className="strat-block">
               <h3>Outcomes</h3>
               <p>
-                Architected analytics that scaled a B2B platform from $100M to
-                $1.4B+ in 18 months (Southern Glazer&rsquo;s). Two provisional
-                patents at Anuba. A track record of shipping infrastructure,
-                not decks.
+                Rebuilt the analytics-pipeline method a national distributor
+                adopted as its standard practice (Southern Glazer&rsquo;s). Two
+                provisional patents at Anuba. A track record of shipping
+                infrastructure, not decks.
               </p>
             </div>
 

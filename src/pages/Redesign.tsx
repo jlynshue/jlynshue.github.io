@@ -121,7 +121,7 @@ const Redesign = () => {
                 Bridgestone, Southern Glazer's. Today I run a fractional CIO/CTO
                 practice and co-founded an edge-AI startup with two provisional
                 patents. I help operationally complex companies turn analytics
-                infrastructure into eight-figure outcomes.{" "}
+                infrastructure into measurable outcomes.{" "}
                 <em>One workflow. Ten business days.</em>
               </p>
             </div>
@@ -160,12 +160,12 @@ const Redesign = () => {
               <h3>Differentiators</h3>
               <ul>
                 <li>
-                  11 years embedded with Fortune 500 C-suite, currently shipping
-                  inside a startup.
+                  Nearly eleven years embedded with Fortune 500 C-suite
+                  stakeholders, now shipping inside a startup.
                 </li>
                 <li>
-                  Architected analytics that scaled $100M → $1.4B+ in 18 months
-                  (Southern Glazer's).
+                  Rebuilt the analytics-pipeline method a national distributor
+                  adopted as its standard practice (Southern Glazer's).
                 </li>
                 <li>
                   Bilingual fluency between board-level strategy and
@@ -246,25 +246,28 @@ const Redesign = () => {
         >
           <div className="card">
             <div className="ck">Case study · 01</div>
-            <h4>Southern Glazer's, 14× in 18 months.</h4>
+            <h4>Southern Glazer's, a pipeline fix that became the standard.</h4>
             <p>
-              Engineered analytics data pipeline (GA360, CM360, BigQuery)
-              enabling B2B e-commerce platform growth from $100M to $1.4B+.
+              Diagnosed intermittent GA360 → BigQuery pipeline failures the
+              client could not isolate, and rewrote the transfer orchestration
+              and data-preparation layer. The client adopted the approach as
+              its standard practice.
             </p>
             <div className="ck-foot">
-              <span>2020 — 2022</span>
+              <span>Razorfish / Publicis</span>
               <a href="https://linkedin.com/in/jonathanlynshue" target="_blank" rel="noopener noreferrer">Read →</a>
             </div>
           </div>
           <div className="card">
             <div className="ck">Case study · 02</div>
-            <h4>Anuba Technologies, $22.5M error-cost reduction.</h4>
+            <h4>Anuba Technologies, edge-AI order accuracy.</h4>
             <p>
-              Edge-AI computer vision system for QSR. Two provisional patents.
-              NVIDIA Inception. Pilot phase 2 of 4.
+              Delivery lead for the edge computer-vision order-accuracy program
+              on NVIDIA Jetson. Two provisional patents. NVIDIA Inception
+              member.
             </p>
             <div className="ck-foot">
-              <span>2024 — present</span>
+              <span>2025 — present</span>
               <a href="https://linkedin.com/in/jonathanlynshue" target="_blank" rel="noopener noreferrer">Read →</a>
             </div>
           </div>
@@ -272,11 +275,12 @@ const Redesign = () => {
             <div className="ck">Case study · 03</div>
             <h4>Stellantis, global data governance at scale.</h4>
             <p>
-              Led global analytics strategy across 14 brands. Unified reporting
-              infrastructure for 250+ stakeholders.
+              Directed BI, web analytics, data science, CRM and media
+              architecture across 16 automotive brands in North America and
+              Europe, and stewarded the cross-agency product roadmap.
             </p>
             <div className="ck-foot">
-              <span>2022 — 2024</span>
+              <span>Razorfish / Publicis</span>
               <a href="https://linkedin.com/in/jonathanlynshue" target="_blank" rel="noopener noreferrer">Read →</a>
             </div>
           </div>
